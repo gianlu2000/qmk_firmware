@@ -15,7 +15,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+
+// https://docs.qmk.fm/feature_macros
+
 #include QMK_KEYBOARD_H
+
+// Set the delay for sending characters in text macros
+int text_char_delay = 30; // default: 8
 
 
 // Define custom keycodes
@@ -35,61 +41,87 @@ enum gianlu_keycodes {
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
 
-		// TODO: valutare di spostare il IF prima dello switch, in modo da evitare di dover ripetere il controllo per ogni case
-		// todo: in questo modo: 
-		/* 
-		if (!record->event.pressed) {
-			return true; // ignora il rilascio
-		}
-		*/
-
-		// Outlook - Saluti
+		// Macro Outlook - Saluti
         case MA_OBNG:
             if (record->event.pressed) {
-                SEND_STRING("Buongiorno,\n");
+                // when keycode MA_OBNG is pressed
+                SEND_STRING_DELAY("Buongiorno,\n", text_char_delay);
+            } else {
+                // when keycode MA_OBNG is released
             }
-            return false;
+            break;
+
         case MA_OBNS:
             if (record->event.pressed) {
-                SEND_STRING("Buonasera,\n");
+                // when keycode MA_OBNS is pressed
+                SEND_STRING_DELAY("Buonasera,\n", text_char_delay);
+            } else {
+                // when keycode MA_OBNS is released
             }
-            return false;
+            break;
+
         case MA_OCDC:
             if (record->event.pressed) {
-				//! NON STAMPA LA RIGA INTERA MA SOLO LA PRIMA PARTE E IL RESTO O NON LO STAMPA PROPRIO OPPURE STAMPA ROBA A CASO, DA VERIFICARE
-                SEND_STRING("come da contatto ");
+                // when keycode MA_OCDC is pressed
+                SEND_STRING_DELAY("come da contatto ", text_char_delay);
+            } else {
+                // when keycode MA_OCDC is released
             }
-            return false;
+            break;
+
         case MA_OJAB:
             if (record->event.pressed) {
-                SEND_STRING("si notifica la seguente fase in abend\n\n");
+                // when keycode MA_OJAB is pressed
+                SEND_STRING_DELAY("si notifica la seguente fase in abend\n\n", text_char_delay);
+            } else {
+                // when keycode MA_OJAB is released
             }
-            return false;
+            break;
+
         case MA_OJAS:
             if (record->event.pressed) {
-                SEND_STRING("si notificano le seguenti fasi in abend\n\n");
+                // when keycode MA_OJAS is pressed
+                SEND_STRING_DELAY("si notifica le seguenti fasi in abend\n\n", text_char_delay);
+            } else {
+                // when keycode MA_OJAS is released
             }
-            return false;
+            break;
+
         case MA_OCOF:
             if (record->event.pressed) {
-                SEND_STRING("si notifica il ritardo del cut-off in oggetto al seguente CP\n\n");
+                // when keycode MA_OCOF is pressed
+				// TODO: CONTINUA DA QUI
+                SEND_STRING_DELAY("si notifica il ritardo del cut-off in oggetto al seguente CP\n\n", text_char_delay);
+            } else {
+                // when keycode MA_OCOF is released
             }
-            return false;
+            break;
+
         case MA_OCOS:
             if (record->event.pressed) {
-                SEND_STRING("si notifica il ritardo dei seguenti cut-off ai CP indicati\n\n");
+                // when keycode MA_OCOS is pressed
+                SEND_STRING_DELAY("si notifica il ritardo dei seguenti cut-off ai CP indicati\n\n", text_char_delay);
+            } else {
+                // when keycode MA_OCOS is released
             }
-            return false;
+            break;
+
         case MA_OBCH:
             if (record->event.pressed) {
-                SEND_STRING("si notifica il ritardo del giro in oggetto al seguente CP\n\n");
+                // when keycode MA_OBCH is pressed
+                SEND_STRING_DELAY("si notifica il ritardo del giro in oggetto al seguente CP\n\n", text_char_delay);
+            } else {
+                // when keycode MA_OBCH is released
             }
-            return false;
+            break;
+
         case MA_OBCS:
             if (record->event.pressed) {
-                SEND_STRING("si notifica il ritardo dei seguenti giri ai CP indicati\n\n");
+                SEND_STRING_DELAY("si notifica il ritardo dei seguenti giri ai CP indicati\n\n", text_char_delay);
+            } else {
+                // when keycode MA_OBCS is released
             }
-            return false;
+            break;
     }
     return true;
 }
