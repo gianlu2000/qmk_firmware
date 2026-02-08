@@ -82,7 +82,7 @@ Le macro vengono create seguendo una particolare denominazione.
 
 Questo per non scombinare la griglia precreata che rappresenta la tastiera in ogni layer
 
-### layers
+### Layers
 
 * Layer 2 -> Win layer
 * Layer 3 -> Fn Win layer
@@ -97,7 +97,7 @@ Questo per non scombinare la griglia precreata che rappresenta la tastiera in og
 
 #### Layer 4
 
-#### Outlook layer
+#### 📧 Outlook layer
 
 Layer dedicato alle macro di testo 
 
@@ -115,6 +115,19 @@ Layer dedicato alle macro di testo
 |  T  | MA_OBCS    | "si notifica il ritardo dei seguenti giri ai CP indicati"         | `si notifica il ritardo dei seguenti giri ai CP indicati\n\n`        | notifica giri multipli          |
 <!-- |     |            |                                                                   |                                                                      |                                 | -->
 
-#### Ticket layer
+#### 🎟️ Ticket layer
 
-Funzionalità futura
+Layer dedicato alle macro di testo da inserire sul portale di ticketing.
+
+Layout attivabile con la pressione di Fn + P
+
+Elenco macro di testo
+
+<!-- TODO: aggiungere successivamente il colore del tasto una volta settato -->
+| Key | Macro name | Text                                                              | String code                                                          | Descrizione                     |
+| :-: | :--------- | :----------                                                       | :-------------                                                       | :----------                     |
+|  1  | MA_TRES    | "Restartato"                                                      | `Restartato`                                                         | Testo                           |
+|  Q  | MA_TREP    | "Restartato come da prosa"                                        | `Restartato come da prosa`                                           | Testo                           |
+|  2  | MA_TNOT    | "Notificato"                                                      | `Notificato`                                                         | Testo                           |
+|  W  | MA_TNOR    | "Notificato a reperibile"                                         | `Notificato a reperibile`                                            | Testo                           |
+|  3  | MA_TNRR    | "Notificato a reperibile e restartato su sua richiesta"           | `Notificato a reperibile e restartato su sua richiesta`              | Testo                           |
