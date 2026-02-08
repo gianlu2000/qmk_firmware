@@ -6,6 +6,7 @@
 * Keyboard Maintainer: [nuphy](https://github.com/nuphy-src)
 * Hardware Supported: NuPhy Air75 V2 PCB
 * Hardware Availability: Private
+* Quick Guide/Poster [download](https://cdn.shopify.com/s/files/1/0268/7297/1373/files/NuPhy_Air75_V2_Quick_Guide.pdf?v=1696498123)
 
 <!-- aggiunta mia, da revisionare -->
 
