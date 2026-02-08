@@ -26,6 +26,8 @@ int text_char_delay = 30; // default: 8
 
 // Define custom keycodes
 enum gianlu_keycodes {
+
+    // Macro Outlook
 	MA_OBNG = SAFE_RANGE,
 	MA_OBNS,
 	MA_OCDC,
@@ -35,13 +37,20 @@ enum gianlu_keycodes {
 	MA_OCOS,
 	MA_OBCH,
 	MA_OBCS,
+
+    // Macro Ticket
+    MA_TRES,
+    MA_TREP,
+    MA_TNOT,
+    MA_TNOR,
+    MA_TNRR,
 };
 
 // Process custom keycodes
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
 
-		// Macro Outlook - Saluti
+		// Macro Outlook
         case MA_OBNG:
             if (record->event.pressed) {
                 // when keycode MA_OBNG is pressed
@@ -122,6 +131,53 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 // when keycode MA_OBCS is released
             }
             break;
+
+        // Macro Ticket
+        case MA_TRES:
+            if (record->event.pressed) {
+                // when keycode MA_TRES is pressed
+                SEND_STRING_DELAY("Restartato", text_char_delay);
+            } else {
+                // when keycode MA_TRES is released
+            }
+            break;
+
+        case MA_TREP:
+            if (record->event.pressed) {
+                // when keycode MA_TREP is pressed
+                SEND_STRING_DELAY("Restartato come da prosa", text_char_delay);
+            } else {
+                // when keycode MA_TREP is released
+            }
+            break;
+
+        case MA_TNOT:
+            if (record->event.pressed) {
+                // when keycode MA_TNOT is pressed
+                SEND_STRING_DELAY("Notificato", text_char_delay);
+            } else {
+                // when keycode MA_TNOT is released
+            }
+            break;
+            
+        case MA_TNOR:
+            if (record->event.pressed) {
+                // when keycode MA_TNOR is pressed
+                SEND_STRING_DELAY("Notificato al reperibile", text_char_delay);
+            } else {
+                // when keycode MA_TNOR is released
+            }
+            break;
+
+        case MA_TNRR:
+            if (record->event.pressed) {
+                // when keycode MA_TNRR is pressed
+                SEND_STRING_DELAY("Notificato al reperibile e restartato su sua richiesta", text_char_delay);
+            } else {
+                // when keycode MA_TNRR is released
+            }
+            break;
+
     }
     return true;
 }
@@ -161,7 +217,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 [3] = LAYOUT_ansi_84(
 	_______, 	KC_BRID,   	KC_BRIU,    _______,  	_______,   	_______,   	_______,   	KC_MPRV,   	KC_MPLY,   	KC_MNXT,  	KC_MUTE, 	KC_VOLD, 	KC_VOLU,	_______,	_______,	_______,
 	_______, 	LNK_BLE1,  	LNK_BLE2,  	LNK_BLE3,  	LNK_RF,   	_______,   	_______,   	_______,   	_______,   	_______,  	_______,   	_______,	_______, 				_______,	_______,
-	_______, 	_______,   	_______,   	_______,  	_______,   	_______,   	_______,   	_______,   	_______,   	MO(5),  	_______,   	DEV_RESET,	SLEEP_MODE, 			BAT_SHOW,	_______,
+	_______, 	_______,   	_______,   	_______,  	_______,   	_______,   	_______,   	_______,   	_______,   	MO(5),  	MO(6),     	DEV_RESET,	SLEEP_MODE, 			BAT_SHOW,	_______,
 	_______,	_______,   	_______,   	_______,  	_______,   	_______,   	_______,	_______,   	_______,   	_______,  	_______,	_______, 	 						_______,	_______,
 	_______,				_______,   	_______,   	RGB_TEST,  	_______,   	BAT_NUM,   	_______,	MO(4), 		RGB_SPD,	RGB_SPI,	_______,				_______,	RGB_VAI,	_______,
 	_______,	_______,	_______,										_______, 							_______,	MO(3),   	_______,				RGB_MOD,	RGB_VAD,    RGB_HUI),
@@ -187,8 +243,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 // layer 6 - Ticket
 [6] = LAYOUT_ansi_84(
 	_______, 	_______,  	_______,  	_______, 	_______,  	_______,  	_______,  	_______,  	_______,  	_______, 	_______, 	_______, 	_______, 	_______,	_______,	_______,
-	_______, 	_______,   	_______,   	_______,  	_______,   	_______,   	_______,   	_______,   	_______,   	_______,  	_______,   	_______,	_______, 				_______,	_______,
-	_______, 	_______,   	_______,   	_______,  	_______,   	_______,   	_______,   	_______,   	_______,   	_______,  	_______,   	_______,	_______, 				_______,	_______,
+	_______, 	MA_TRES,   	MA_TNOT,   	MA_TNRR,  	_______,   	_______,   	_______,   	_______,   	_______,   	_______,  	_______,   	_______,	_______, 				_______,	_______,
+	_______, 	MA_TREP,   	MA_TNOR,   	_______,  	_______,   	_______,   	_______,   	_______,   	_______,   	_______,  	_______,   	_______,	_______, 				_______,	_______,
 	_______,	_______,   	_______,   	_______,  	_______,   	_______,   	_______,   	_______,   	_______,   	_______,  	_______,	_______, 	 						_______,	_______,
 	_______,				_______,   	_______,   	_______,  	_______,   	_______,   	_______,   	_______,   	_______,	_______,	_______,				_______,	_______,	_______,
 	_______,	_______,	_______,										_______, 							_______,	MO(6),   	_______,				_______,	_______,   _______)
