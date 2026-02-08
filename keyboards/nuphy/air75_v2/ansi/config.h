@@ -34,7 +34,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define SD1_RX_PIN                          B7
 #define SD1_RX_PAL_MODE                     0
 
-#define TAP_CODE_DELAY                      8
+#define TAP_CODE_DELAY                      30  /* default: 8 */
 #define DYNAMIC_KEYMAP_MACRO_DELAY          8
 #define DYNAMIC_KEYMAP_LAYER_COUNT          8
 
