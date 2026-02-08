@@ -15,22 +15,113 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+
+// https://docs.qmk.fm/feature_macros
+
 #include QMK_KEYBOARD_H
+
+// Set the delay for sending characters in text macros
+int text_char_delay = 30; // default: 8
 
 
 // Define custom keycodes
 enum gianlu_keycodes {
-	FN_Y_MACRO = SAFE_RANGE,
+	MA_OBNG = SAFE_RANGE,
+	MA_OBNS,
+	MA_OCDC,
+	MA_OJAB,
+	MA_OJAS,
+	MA_OCOF,
+	MA_OCOS,
+	MA_OBCH,
+	MA_OBCS,
 };
 
 // Process custom keycodes
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
-        case FN_Y_MACRO:
+
+		// Macro Outlook - Saluti
+        case MA_OBNG:
             if (record->event.pressed) {
-                SEND_STRING("Buongiorno!");
+                // when keycode MA_OBNG is pressed
+                SEND_STRING_DELAY("Buongiorno,\n", text_char_delay);
+            } else {
+                // when keycode MA_OBNG is released
             }
-            return false;
+            break;
+
+        case MA_OBNS:
+            if (record->event.pressed) {
+                // when keycode MA_OBNS is pressed
+                SEND_STRING_DELAY("Buonasera,\n", text_char_delay);
+            } else {
+                // when keycode MA_OBNS is released
+            }
+            break;
+
+        case MA_OCDC:
+            if (record->event.pressed) {
+                // when keycode MA_OCDC is pressed
+                SEND_STRING_DELAY("come da contatto ", text_char_delay);
+            } else {
+                // when keycode MA_OCDC is released
+            }
+            break;
+
+        case MA_OJAB:
+            if (record->event.pressed) {
+                // when keycode MA_OJAB is pressed
+                SEND_STRING_DELAY("si notifica la seguente fase in abend\n\n", text_char_delay);
+            } else {
+                // when keycode MA_OJAB is released
+            }
+            break;
+
+        case MA_OJAS:
+            if (record->event.pressed) {
+                // when keycode MA_OJAS is pressed
+                SEND_STRING_DELAY("si notifica le seguenti fasi in abend\n\n", text_char_delay);
+            } else {
+                // when keycode MA_OJAS is released
+            }
+            break;
+
+        case MA_OCOF:
+            if (record->event.pressed) {
+                // when keycode MA_OCOF is pressed
+				// TODO: CONTINUA DA QUI
+                SEND_STRING_DELAY("si notifica il ritardo del cut-off in oggetto al seguente CP\n\n", text_char_delay);
+            } else {
+                // when keycode MA_OCOF is released
+            }
+            break;
+
+        case MA_OCOS:
+            if (record->event.pressed) {
+                // when keycode MA_OCOS is pressed
+                SEND_STRING_DELAY("si notifica il ritardo dei seguenti cut-off ai CP indicati\n\n", text_char_delay);
+            } else {
+                // when keycode MA_OCOS is released
+            }
+            break;
+
+        case MA_OBCH:
+            if (record->event.pressed) {
+                // when keycode MA_OBCH is pressed
+                SEND_STRING_DELAY("si notifica il ritardo del giro in oggetto al seguente CP\n\n", text_char_delay);
+            } else {
+                // when keycode MA_OBCH is released
+            }
+            break;
+
+        case MA_OBCS:
+            if (record->event.pressed) {
+                SEND_STRING_DELAY("si notifica il ritardo dei seguenti giri ai CP indicati\n\n", text_char_delay);
+            } else {
+                // when keycode MA_OBCS is released
+            }
+            break;
     }
     return true;
 }
@@ -70,7 +161,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 [3] = LAYOUT_ansi_84(
 	_______, 	KC_BRID,   	KC_BRIU,    _______,  	_______,   	_______,   	_______,   	KC_MPRV,   	KC_MPLY,   	KC_MNXT,  	KC_MUTE, 	KC_VOLD, 	KC_VOLU,	_______,	_______,	_______,
 	_______, 	LNK_BLE1,  	LNK_BLE2,  	LNK_BLE3,  	LNK_RF,   	_______,   	_______,   	_______,   	_______,   	_______,  	_______,   	_______,	_______, 				_______,	_______,
-	_______, 	_______,   	_______,   	_______,  	_______,   	_______,   	FN_Y_MACRO,   	_______,   	_______,   	_______,  	_______,   	DEV_RESET,	SLEEP_MODE, 			BAT_SHOW,	_______,
+	_______, 	_______,   	_______,   	_______,  	_______,   	_______,   	_______,   	_______,   	_______,   	MO(5),  	_______,   	DEV_RESET,	SLEEP_MODE, 			BAT_SHOW,	_______,
 	_______,	_______,   	_______,   	_______,  	_______,   	_______,   	_______,	_______,   	_______,   	_______,  	_______,	_______, 	 						_______,	_______,
 	_______,				_______,   	_______,   	RGB_TEST,  	_______,   	BAT_NUM,   	_______,	MO(4), 		RGB_SPD,	RGB_SPI,	_______,				_______,	RGB_VAI,	_______,
 	_______,	_______,	_______,										_______, 							_______,	MO(3),   	_______,				RGB_MOD,	RGB_VAD,    RGB_HUI),
@@ -82,5 +173,23 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 	_______, 	_______,   	_______,   	_______,  	_______,   	_______,   	_______,   	_______,   	_______,   	_______,  	_______,   	_______,	_______, 				_______,	_______,
 	_______,	_______,   	_______,   	_______,  	_______,   	_______,   	_______,   	_______,   	_______,   	_______,  	_______,	_______, 	 						_______,	_______,
 	_______,				_______,   	_______,   	_______,  	_______,   	_______,   	_______,   	_______,   	SIDE_SPD,	SIDE_SPI,	_______,				_______,	SIDE_VAI,	_______,
-	_______,	_______,	_______,										_______, 							_______,	MO(4),   	_______,				SIDE_MOD,	SIDE_VAD,   SIDE_HUI)
+	_______,	_______,	_______,										_______, 							_______,	MO(4),   	_______,				SIDE_MOD,	SIDE_VAD,   SIDE_HUI),
+
+// layer 5 - Outlook
+[5] = LAYOUT_ansi_84(
+	_______, 	_______,  	_______,  	_______, 	_______,  	_______,  	_______,  	_______,  	_______,  	_______, 	_______, 	_______, 	_______, 	_______,	_______,	_______,
+	_______, 	MA_OBNG,   	MA_OCDC,   	MA_OJAB,  	MA_OCOF,   	MA_OBCH,   	_______,   	_______,   	_______,   	_______,  	_______,   	_______,	_______, 				_______,	_______,
+	_______, 	MA_OBNS,   	_______,   	MA_OJAS,  	MA_OCOS,   	MA_OBCS,   	_______,   	_______,   	_______,   	_______,  	_______,   	_______,	_______, 				_______,	_______,
+	_______,	_______,   	_______,   	_______,  	_______,   	_______,   	_______,   	_______,   	_______,   	_______,  	_______,	_______, 	 						_______,	_______,
+	_______,				_______,   	_______,   	_______,  	_______,   	_______,   	_______,   	_______,   	_______,	_______,	_______,				_______,	_______,	_______,
+	_______,	_______,	_______,										_______, 							_______,	MO(5),   	_______,				_______,	_______,   _______),
+
+// layer 6 - Ticket
+[6] = LAYOUT_ansi_84(
+	_______, 	_______,  	_______,  	_______, 	_______,  	_______,  	_______,  	_______,  	_______,  	_______, 	_______, 	_______, 	_______, 	_______,	_______,	_______,
+	_______, 	_______,   	_______,   	_______,  	_______,   	_______,   	_______,   	_______,   	_______,   	_______,  	_______,   	_______,	_______, 				_______,	_______,
+	_______, 	_______,   	_______,   	_______,  	_______,   	_______,   	_______,   	_______,   	_______,   	_______,  	_______,   	_______,	_______, 				_______,	_______,
+	_______,	_______,   	_______,   	_______,  	_______,   	_______,   	_______,   	_______,   	_______,   	_______,  	_______,	_______, 	 						_______,	_______,
+	_______,				_______,   	_______,   	_______,  	_______,   	_______,   	_______,   	_______,   	_______,	_______,	_______,				_______,	_______,	_______,
+	_______,	_______,	_______,										_______, 							_______,	MO(6),   	_______,				_______,	_______,   _______)
 };
