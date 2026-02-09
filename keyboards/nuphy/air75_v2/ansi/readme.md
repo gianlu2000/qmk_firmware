@@ -102,17 +102,17 @@ Questo per non scombinare la griglia precreata che rappresenta la tastiera in og
 Layer dedicato alle macro di testo 
 
 <!-- TODO: aggiungere successivamente il colore del tasto una volta settato -->
-| Key | Macro name | Text                                                              | String code                                                          | Descrizione                     |
-| :-: | :--------- | :----------                                                       | :-------------                                                       | :----------                     |
-|  1  | MA_OBNG    | "Buongiorno,"                                                     | `Buongiorno\n`                                                       | Saluto inizio mail              |
-|  Q  | MA_OBNS    | "Buonasera,"                                                      | `Buonasera\n`                                                        | Saluto inizio mail              |
-|  2  | MA_OCDC    | "Come da contato "                                                | `Come da contatto `                                                  | testo di chiamata               |
-|  3  | MA_OJAB    | "si notifica la seguente fase in abend"                           | `si notifica la seguente fase in abend\n\n`                          | notifica abend singolo          |
-|  E  | MA_OJAS    | "si notificano le seguenti fasi in abend"                         | `si notificano le seguenti fasi in abend\n\n`                        | notifica abend multiplo         |
-|  4  | MA_OCOF    | "si notifica il ritardo del cut-off in oggetto al seguente CP"    | `si notifica il ritardo del cut-off in oggetto al seguente CP\n\n`   | notifica cut-off singolo        |
-|  R  | MA_OCOS    | "si notifica il ritardo dei seguenti cut-off ai CP indicati"      | `si notifica il ritardo dei seguenti cut-off ai CP indicati\n\n`     | notifica cut-off multiplo       |
-|  5  | MA_OBCH    | "si notifica il ritardo del giro in oggetto al seguente CP"       | `si notifica il ritardo del giro in oggetto al seguente CP\n\n`      | notifica giro singolo           |
-|  T  | MA_OBCS    | "si notifica il ritardo dei seguenti giri ai CP indicati"         | `si notifica il ritardo dei seguenti giri ai CP indicati\n\n`        | notifica giri multipli          |
+| Key | Macro name | Text                                                              | String code                                                          | Key color      | Descrizione                     |
+| :-: | :--------- | :----------                                                       | :-------------                                                       | :------------- | :----------                     |
+|  1  | MA_OBNG    | "Buongiorno,"                                                     | `Buongiorno\n`                                                       | Green          | Saluto inizio mail              |
+|  Q  | MA_OBNS    | "Buonasera,"                                                      | `Buonasera\n`                                                        | Green          | Saluto inizio mail              |
+|  2  | MA_OCDC    | "Come da contato "                                                | `Come da contatto `                                                  | Yellow         | testo di chiamata               |
+|  3  | MA_OJAB    | "si notifica la seguente fase in abend"                           | `si notifica la seguente fase in abend\n\n`                          | Green          | notifica abend singolo          |
+|  E  | MA_OJAS    | "si notificano le seguenti fasi in abend"                         | `si notificano le seguenti fasi in abend\n\n`                        | Green          | notifica abend multiplo         |
+|  4  | MA_OCOF    | "si notifica il ritardo del cut-off in oggetto al seguente CP"    | `si notifica il ritardo del cut-off in oggetto al seguente CP\n\n`   | Blue           | notifica cut-off singolo        |
+|  R  | MA_OCOS    | "si notifica il ritardo dei seguenti cut-off ai CP indicati"      | `si notifica il ritardo dei seguenti cut-off ai CP indicati\n\n`     | Blue           | notifica cut-off multiplo       |
+|  5  | MA_OBCH    | "si notifica il ritardo del giro in oggetto al seguente CP"       | `si notifica il ritardo del giro in oggetto al seguente CP\n\n`      | Purple         | notifica giro singolo           |
+|  T  | MA_OBCS    | "si notifica il ritardo dei seguenti giri ai CP indicati"         | `si notifica il ritardo dei seguenti giri ai CP indicati\n\n`        | Purple         | notifica giri multipli          |
 <!-- |     |            |                                                                   |                                                                      |                                 | -->
 
 #### 🎟️ Ticket layer
@@ -124,10 +124,10 @@ Layout attivabile con la pressione di Fn + P
 Elenco macro di testo
 
 <!-- TODO: aggiungere successivamente il colore del tasto una volta settato -->
-| Key | Macro name | Text                                                              | String code                                                          | Descrizione                     |
-| :-: | :--------- | :----------                                                       | :-------------                                                       | :----------                     |
-|  1  | MA_TRES    | "Restartato"                                                      | `Restartato`                                                         | Testo                           |
-|  Q  | MA_TREP    | "Restartato come da prosa"                                        | `Restartato come da prosa`                                           | Testo                           |
-|  2  | MA_TNOT    | "Notificato"                                                      | `Notificato`                                                         | Testo                           |
-|  W  | MA_TNOR    | "Notificato a reperibile"                                         | `Notificato a reperibile`                                            | Testo                           |
-|  3  | MA_TNRR    | "Notificato a reperibile e restartato su sua richiesta"           | `Notificato a reperibile e restartato su sua richiesta`              | Testo                           |
+| Key | Macro name | Text                                                              | String code                                                          | Key color      | Descrizione                     |
+| :-: | :--------- | :----------                                                       | :-------------                                                       | :------------- | :----------                     |
+|  1  | MA_TRES    | "Restartato"                                                      | `Restartato`                                                         | Green          | Testo                           |
+|  Q  | MA_TREP    | "Restartato come da prosa"                                        | `Restartato come da prosa`                                           | Green          | Testo                           |
+|  2  | MA_TNOT    | "Notificato"                                                      | `Notificato`                                                         | Green          | Testo                           |
+|  W  | MA_TNOR    | "Notificato a reperibile"                                         | `Notificato a reperibile`                                            | Green          | Testo                           |
+|  3  | MA_TNRR    | "Notificato a reperibile e restartato su sua richiesta"           | `Notificato a reperibile e restartato su sua richiesta`              | Green          | Testo                           |
