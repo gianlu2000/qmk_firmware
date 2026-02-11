@@ -249,3 +249,49 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 	_______,				_______,   	_______,   	_______,  	_______,   	_______,   	_______,   	_______,   	_______,	_______,	_______,				_______,	_______,	_______,
 	_______,	_______,	_______,										_______, 							_______,	MO(6),   	_______,				_______,	_______,   _______)
 };
+
+
+// Metti in pausa l’effetto quando entri nel layer 5 o 6, e ripristinalo quando esci
+layer_state_t layer_state_set_user(layer_state_t state) {
+    if (layer_state_cmp(state, 5) || layer_state_cmp(state, 6)) { // se sei in uno dei layer Fn
+        rgb_matrix_mode_noeeprom(RGB_MATRIX_SOLID_COLOR);
+        rgb_matrix_sethsv_noeeprom(0, 0, 0); // base spento
+    } else {
+        rgb_matrix_reload_from_eeprom(); // ripristina effetto precedente
+    }
+    return state;
+}
+
+
+// Colora i tasti in modo diverso quando sei nel layer 5
+// tool per prendere i colori: https://www.rapidtables.com/web/color/RGB_Color.html
+bool rgb_matrix_indicators_user(void) {
+    if (layer_state_is(5)) {
+
+        // Tasti colorati per layer Outlook
+        rgb_matrix_set_color(29, 255, 0, 0);   // 1
+        rgb_matrix_set_color(28, 255, 255, 0);   // 2
+        rgb_matrix_set_color(27, 0, 255, 0);   // 3
+        rgb_matrix_set_color(26, 0, 0, 255);   // 4
+        rgb_matrix_set_color(25, 127, 0, 255);   // 5
+
+        rgb_matrix_set_color(32, 255, 0, 0);   // Q
+        // rgb_matrix_set_color(33, 255, 0, 0);   // W  - tasto non utilizzato per macro di testo, lo lascio spento
+        rgb_matrix_set_color(34, 0, 255, 0);   // E
+        rgb_matrix_set_color(35, 0, 0, 255);   // R
+        rgb_matrix_set_color(36, 127, 0, 255);   // T
+
+    } else if (layer_state_is(6)) {
+
+        // Tasti colorati per layer Ticket
+        rgb_matrix_set_color(29, 0, 204, 0);   // 1
+        rgb_matrix_set_color(28, 0, 204, 0);   // 2
+        rgb_matrix_set_color(27, 0, 204, 0);   // 3
+
+        rgb_matrix_set_color(32, 0, 204, 0);   // Q
+        rgb_matrix_set_color(33, 0, 204, 0);   // W
+    } else {
+        // se non sei in nessuno dei layer Fn, lascia tutto come è
+    }
+    return false;
+}
