@@ -90,7 +90,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case MA_OJAS:
             if (record->event.pressed) {
                 // when keycode MA_OJAS is pressed
-                SEND_STRING_DELAY("si notifica le seguenti fasi in abend\n\n", text_char_delay);
+                SEND_STRING_DELAY("si notificano le seguenti fasi in abend\n\n", text_char_delay);
             } else {
                 // when keycode MA_OJAS is released
             }
@@ -99,7 +99,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case MA_OCOF:
             if (record->event.pressed) {
                 // when keycode MA_OCOF is pressed
-				// TODO: CONTINUA DA QUI
                 SEND_STRING_DELAY("si notifica il ritardo del cut-off in oggetto al seguente CP\n\n", text_char_delay);
             } else {
                 // when keycode MA_OCOF is released
@@ -109,7 +108,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case MA_OCOS:
             if (record->event.pressed) {
                 // when keycode MA_OCOS is pressed
-                SEND_STRING_DELAY("si notifica il ritardo dei seguenti cut-off ai CP indicati\n\n", text_char_delay);
+                SEND_STRING_DELAY("si notificano i ritardi dei seguenti cut-off ai CP indicati\n\n", text_char_delay);
             } else {
                 // when keycode MA_OCOS is released
             }
@@ -126,7 +125,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
         case MA_OBCS:
             if (record->event.pressed) {
-                SEND_STRING_DELAY("si notifica il ritardo dei seguenti giri ai CP indicati\n\n", text_char_delay);
+                SEND_STRING_DELAY("si notificano i ritardi dei seguenti giri ai CP indicati\n\n", text_char_delay);
             } else {
                 // when keycode MA_OBCS is released
             }
