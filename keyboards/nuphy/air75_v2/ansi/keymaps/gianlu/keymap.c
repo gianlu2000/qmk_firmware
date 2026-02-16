@@ -253,8 +253,12 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 // Metti in pausa l’effetto quando entri nel layer 5 o 6, e ripristinalo quando esci
 layer_state_t layer_state_set_user(layer_state_t state) {
     if (layer_state_cmp(state, 5) || layer_state_cmp(state, 6)) { // se sei in uno dei layer Fn
+        
+        // Pausa l’effetto e spegni i LED
         rgb_matrix_mode_noeeprom(RGB_MATRIX_SOLID_COLOR);
+
         rgb_matrix_sethsv_noeeprom(0, 0, 0); // base spento
+
     } else {
         rgb_matrix_reload_from_eeprom(); // ripristina effetto precedente
     }
@@ -266,6 +270,20 @@ layer_state_t layer_state_set_user(layer_state_t state) {
 // tool per prendere i colori: https://www.rapidtables.com/web/color/RGB_Color.html
 bool rgb_matrix_indicators_user(void) {
     if (layer_state_is(5)) {
+
+        // Effetto respiro semplice (onda triangolare)
+
+        uint16_t t = timer_read();
+        uint8_t phase = (t >> 3);   // velocità (più grande = più lento)
+
+        uint8_t breathe;
+
+        if (phase & 0x80) {
+            breathe = 255 - ((phase & 0x7F) << 1);
+        } else {
+            breathe = (phase & 0x7F) << 1;
+        }
+
 
         // Tasti colorati per layer Outlook
         rgb_matrix_set_color(29, 255, 0, 0);   // 1
@@ -279,6 +297,9 @@ bool rgb_matrix_indicators_user(void) {
         rgb_matrix_set_color(34, 0, 255, 0);   // E
         rgb_matrix_set_color(35, 0, 0, 255);   // R
         rgb_matrix_set_color(36, 127, 0, 255);   // T
+
+        // Breathing light effect
+        rgb_matrix_set_color(40, 0, 0, breathe);   // Tasto O
 
     } else if (layer_state_is(6)) {
 
