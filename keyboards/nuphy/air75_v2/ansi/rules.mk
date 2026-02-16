@@ -3,4 +3,6 @@ UART_DRIVER_REQUIRED = yes
 
 # SEND_STRING_ENABLE = yes	# Attiva di default
 COMBO_ENABLED = yes
+RGB_MATRIX_ENABLE = yes
+
 
