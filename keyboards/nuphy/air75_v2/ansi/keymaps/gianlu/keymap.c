@@ -303,6 +303,19 @@ bool rgb_matrix_indicators_user(void) {
 
     } else if (layer_state_is(6)) {
 
+        uint16_t t = timer_read();
+        uint8_t phase = (t >> 3);   // velocità (più grande = più lento)
+
+        uint8_t breathe;
+
+        if (phase & 0x80) {
+            breathe = 255 - ((phase & 0x7F) << 1);
+        } else {
+            breathe = (phase & 0x7F) << 1;
+        }
+
+        breathe = (breathe * 153) / 255; // riduci la luminosità al 60% (153/255)
+
         // Tasti colorati per layer Ticket
         rgb_matrix_set_color(29, 0, 204, 0);   // 1
         rgb_matrix_set_color(28, 0, 204, 0);   // 2
@@ -310,6 +323,10 @@ bool rgb_matrix_indicators_user(void) {
 
         rgb_matrix_set_color(32, 0, 204, 0);   // Q
         rgb_matrix_set_color(33, 0, 204, 0);   // W
+
+        // Breathing light effect
+        rgb_matrix_set_color(41, 0, breathe, 0);   // P
+
     } else {
         // se non sei in nessuno dei layer Fn, lascia tutto come è
     }
