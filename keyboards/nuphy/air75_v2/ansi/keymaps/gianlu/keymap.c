@@ -347,6 +347,7 @@ bool rgb_matrix_indicators_user(void) {
 
         rgb_matrix_set_color(32, 0, 204, 0);   // Q
         rgb_matrix_set_color(33, 0, 204, 0);   // W
+        rgb_matrix_set_color(54, 0, 204, 0);   // G
 
         // Breathing light effect
         rgb_matrix_set_color(41, 0, breathe, 0);   // P
