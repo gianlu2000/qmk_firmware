@@ -190,11 +190,57 @@ static void send_char_nonblocking(char c) {
     // fallback: ignore unknown chars
 }
 
+// This is a very basic implementation that only handles a few common Unicode characters.
+static void send_unicode_nonblocking(uint16_t cp) {
+    // Map common Italian accented letters using dead-keys on
+    // US-International host layout.
+    // Grave accents: ` + letter
+    // Acute accents: '  + letter (sent as KC_QUOT)
+
+    // à / À
+    if (cp == 0x00E0) { tap_code(KC_GRV); wait_ms(20); tap_code(KC_A); return; }
+    if (cp == 0x00C0) { tap_code(KC_GRV); wait_ms(20); register_code(KC_LSFT); tap_code(KC_A); unregister_code(KC_LSFT); return; }
+
+    // è / È  (grave)
+    if (cp == 0x00E8) { tap_code(KC_GRV); wait_ms(20); tap_code(KC_E); return; }
+    if (cp == 0x00C8) { tap_code(KC_GRV); wait_ms(20); register_code(KC_LSFT); tap_code(KC_E); unregister_code(KC_LSFT); return; }
+
+    // é / É  (acute)
+    if (cp == 0x00E9) { tap_code(KC_QUOT); wait_ms(20); tap_code(KC_E); return; }
+    if (cp == 0x00C9) { tap_code(KC_QUOT); wait_ms(20); register_code(KC_LSFT); tap_code(KC_E); unregister_code(KC_LSFT); return; }
+
+    // ì / Ì (grave)
+    if (cp == 0x00EC) { tap_code(KC_GRV); wait_ms(20); tap_code(KC_I); return; }
+    if (cp == 0x00CC) { tap_code(KC_GRV); wait_ms(20); register_code(KC_LSFT); tap_code(KC_I); unregister_code(KC_LSFT); return; }
+
+    // ò / Ò (grave)
+    if (cp == 0x00F2) { tap_code(KC_GRV); wait_ms(20); tap_code(KC_O); return; }
+    if (cp == 0x00D2) { tap_code(KC_GRV); wait_ms(20); register_code(KC_LSFT); tap_code(KC_O); unregister_code(KC_LSFT); return; }
+
+    // ù / Ù (grave)
+    if (cp == 0x00F9) { tap_code(KC_GRV); wait_ms(20); tap_code(KC_U); return; }
+    if (cp == 0x00D9) { tap_code(KC_GRV); wait_ms(20); register_code(KC_LSFT); tap_code(KC_U); unregister_code(KC_LSFT); return; }
+
+    // fallback: ignore unknown unicode
+}
+
+
+// Call this in matrix_scan_user to handle sending macro characters over time without blocking the main loop.
 void matrix_scan_user(void) {
     if (!macro_running || !macro_str) return;
     if (timer_elapsed(macro_timer) >= (uint16_t)text_char_delay) {
-        char c = macro_str[macro_index++];
-        send_char_nonblocking(c);
+        uint8_t b = (uint8_t)macro_str[macro_index];
+
+        if (b >= 0xC2 && (macro_index + 1) < macro_len) {
+            // assume a 2-byte UTF-8 sequence (Latin-1 supplements like à)
+            uint8_t b2 = (uint8_t)macro_str[macro_index + 1];
+            uint16_t cp = ((b & 0x1F) << 6) | (b2 & 0x3F);
+            macro_index += 2;
+            send_unicode_nonblocking(cp);
+        } else {
+            char c = macro_str[macro_index++];
+            send_char_nonblocking(c);
+        }
         macro_timer = timer_read();
         if (macro_index >= macro_len) {
             macro_running = false;
