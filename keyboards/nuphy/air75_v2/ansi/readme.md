@@ -131,3 +131,4 @@ Elenco macro di testo
 |  2  | MA_TNOT    | "Notificato"                                                      | `Notificato`                                                         | Green          | Testo                           |
 |  W  | MA_TNOR    | "Notificato a reperibile"                                         | `Notificato a reperibile`                                            | Green          | Testo                           |
 |  3  | MA_TNRR    | "Notificato a reperibile e restartato su sua richiesta"           | `Notificato a reperibile e restartato su sua richiesta`              | Green          | Testo                           |
+|  G  | MA_TFGC    | "Fase da completare già in complete, fase completata"             | `Fase da completare già in complete, fase completata`                | Green          | Testo                           |

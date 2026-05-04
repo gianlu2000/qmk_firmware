@@ -19,9 +19,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // https://docs.qmk.fm/feature_macros
 
 #include QMK_KEYBOARD_H
+#include <ctype.h>
+#include <string.h>
 
 // Set the delay for sending characters in text macros
 int text_char_delay = 30; // default: 8
+
+static bool macro_running = false; // flag per indicare se una macro è in esecuzione
+static uint8_t macro_index = 0; // per tenere traccia del keycode della macro in esecuzione
+static uint16_t macro_timer = 0; // per gestire il timing della macro
+static const char *macro_str = NULL; // stringa della macro in esecuzione
+static uint16_t macro_len = 0; // lunghezza della stringa della macro
 
 
 // Define custom keycodes
@@ -44,141 +52,203 @@ enum gianlu_keycodes {
     MA_TNOT,
     MA_TNOR,
     MA_TNRR,
+    MA_TFGC,
 };
 
 // Process custom keycodes
+static void start_macro(const char *s);
+
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
 
 		// Macro Outlook
         case MA_OBNG:
             if (record->event.pressed) {
-                // when keycode MA_OBNG is pressed
-                SEND_STRING_DELAY("Buongiorno,\n", text_char_delay);
-            } else {
-                // when keycode MA_OBNG is released
+                start_macro("Buongiorno,\n");
             }
             break;
 
         case MA_OBNS:
             if (record->event.pressed) {
-                // when keycode MA_OBNS is pressed
-                SEND_STRING_DELAY("Buonasera,\n", text_char_delay);
-            } else {
-                // when keycode MA_OBNS is released
+                start_macro("Buonasera,\n");
             }
             break;
 
         case MA_OCDC:
             if (record->event.pressed) {
-                // when keycode MA_OCDC is pressed
-                SEND_STRING_DELAY("come da contatto ", text_char_delay);
-            } else {
-                // when keycode MA_OCDC is released
+                start_macro("come da contatto ");
             }
             break;
 
         case MA_OJAB:
             if (record->event.pressed) {
-                // when keycode MA_OJAB is pressed
-                SEND_STRING_DELAY("si notifica la seguente fase in abend\n\n", text_char_delay);
-            } else {
-                // when keycode MA_OJAB is released
+                start_macro("si notifica la seguente fase in abend\n\n");
             }
             break;
 
         case MA_OJAS:
             if (record->event.pressed) {
-                // when keycode MA_OJAS is pressed
-                SEND_STRING_DELAY("si notificano le seguenti fasi in abend\n\n", text_char_delay);
-            } else {
-                // when keycode MA_OJAS is released
+                start_macro("si notificano le seguenti fasi in abend\n\n");
             }
             break;
 
         case MA_OCOF:
             if (record->event.pressed) {
-                // when keycode MA_OCOF is pressed
-                SEND_STRING_DELAY("si notifica il ritardo del cut-off in oggetto al seguente CP\n\n", text_char_delay);
-            } else {
-                // when keycode MA_OCOF is released
+                start_macro("si notifica il ritardo del cut-off in oggetto al seguente CP\n\n");
             }
             break;
 
         case MA_OCOS:
             if (record->event.pressed) {
-                // when keycode MA_OCOS is pressed
-                SEND_STRING_DELAY("si notificano i ritardi dei seguenti cut-off ai CP indicati\n\n", text_char_delay);
-            } else {
-                // when keycode MA_OCOS is released
+                start_macro("si notificano i ritardi dei seguenti cut-off ai CP indicati\n\n");
             }
             break;
 
         case MA_OBCH:
             if (record->event.pressed) {
-                // when keycode MA_OBCH is pressed
-                SEND_STRING_DELAY("si notifica il ritardo del giro in oggetto al seguente CP\n\n", text_char_delay);
-            } else {
-                // when keycode MA_OBCH is released
+                start_macro("si notifica il ritardo del giro in oggetto al seguente CP\n\n");
             }
             break;
 
         case MA_OBCS:
             if (record->event.pressed) {
-                SEND_STRING_DELAY("si notificano i ritardi dei seguenti giri ai CP indicati\n\n", text_char_delay);
-            } else {
-                // when keycode MA_OBCS is released
+                start_macro("si notificano i ritardi dei seguenti giri ai CP indicati\n\n");
             }
             break;
 
         // Macro Ticket
         case MA_TRES:
             if (record->event.pressed) {
-                // when keycode MA_TRES is pressed
-                SEND_STRING_DELAY("Restartato", text_char_delay);
-            } else {
-                // when keycode MA_TRES is released
+                start_macro("Restartato");
             }
             break;
 
         case MA_TREP:
             if (record->event.pressed) {
-                // when keycode MA_TREP is pressed
-                SEND_STRING_DELAY("Restartato come da prosa", text_char_delay);
-            } else {
-                // when keycode MA_TREP is released
+                start_macro("Restartato come da prosa");
             }
             break;
 
         case MA_TNOT:
             if (record->event.pressed) {
-                // when keycode MA_TNOT is pressed
-                SEND_STRING_DELAY("Notificato", text_char_delay);
-            } else {
-                // when keycode MA_TNOT is released
+                start_macro("Notificato");
             }
             break;
             
         case MA_TNOR:
             if (record->event.pressed) {
-                // when keycode MA_TNOR is pressed
-                SEND_STRING_DELAY("Notificato al reperibile", text_char_delay);
-            } else {
-                // when keycode MA_TNOR is released
+                start_macro("Notificato al reperibile");
             }
             break;
 
         case MA_TNRR:
             if (record->event.pressed) {
-                // when keycode MA_TNRR is pressed
-                SEND_STRING_DELAY("Notificato al reperibile e restartato su sua richiesta", text_char_delay);
-            } else {
-                // when keycode MA_TNRR is released
+                start_macro("Notificato al reperibile e restartato su sua richiesta");
+            }
+            break;
+
+        case MA_TFGC:
+            if (record->event.pressed) {
+                start_macro("Fase da completare già in complete, fase completata");
             }
             break;
 
     }
     return true;
+}
+
+// --- Non-blocking macro engine ---
+static void start_macro(const char *s) {
+    if (!s) return;
+    macro_str = s;
+    macro_len = (uint16_t)strlen(s);
+    macro_index = 0;
+    macro_timer = timer_read();
+    macro_running = true;
+}
+
+static void send_char_nonblocking(char c) {
+    if (c == '\n') { tap_code(KC_ENT); return; }
+    if (c == ' ') { tap_code(KC_SPC); return; }
+    if (c == ',') { tap_code(KC_COMM); return; }
+    if (c == '.') { tap_code(KC_DOT); return; }
+    if (c == '\'') { tap_code(KC_QUOT); return; }
+    if (c == '-') { tap_code(KC_MINS); return; }
+    if (c >= '0' && c <= '9') { tap_code(KC_0 + (c - '0')); return; }
+    if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')) {
+        bool upper = (c >= 'A' && c <= 'Z');
+        uint8_t kc = KC_A + (uint8_t)(tolower(c) - 'a');
+        if (upper) {
+            register_code(KC_LSFT);
+            tap_code(kc);
+            unregister_code(KC_LSFT);
+        } else {
+            tap_code(kc);
+        }
+        return;
+    }
+    // fallback: ignore unknown chars
+}
+
+// This is a very basic implementation that only handles a few common Unicode characters.
+static void send_unicode_nonblocking(uint16_t cp) {
+    // Map common Italian accented letters using dead-keys on
+    // US-International host layout.
+    // Grave accents: ` + letter
+    // Acute accents: '  + letter (sent as KC_QUOT)
+
+    // à / À
+    if (cp == 0x00E0) { tap_code(KC_GRV); wait_ms(20); tap_code(KC_A); return; }
+    if (cp == 0x00C0) { tap_code(KC_GRV); wait_ms(20); register_code(KC_LSFT); tap_code(KC_A); unregister_code(KC_LSFT); return; }
+
+    // è / È  (grave)
+    if (cp == 0x00E8) { tap_code(KC_GRV); wait_ms(20); tap_code(KC_E); return; }
+    if (cp == 0x00C8) { tap_code(KC_GRV); wait_ms(20); register_code(KC_LSFT); tap_code(KC_E); unregister_code(KC_LSFT); return; }
+
+    // é / É  (acute)
+    if (cp == 0x00E9) { tap_code(KC_QUOT); wait_ms(20); tap_code(KC_E); return; }
+    if (cp == 0x00C9) { tap_code(KC_QUOT); wait_ms(20); register_code(KC_LSFT); tap_code(KC_E); unregister_code(KC_LSFT); return; }
+
+    // ì / Ì (grave)
+    if (cp == 0x00EC) { tap_code(KC_GRV); wait_ms(20); tap_code(KC_I); return; }
+    if (cp == 0x00CC) { tap_code(KC_GRV); wait_ms(20); register_code(KC_LSFT); tap_code(KC_I); unregister_code(KC_LSFT); return; }
+
+    // ò / Ò (grave)
+    if (cp == 0x00F2) { tap_code(KC_GRV); wait_ms(20); tap_code(KC_O); return; }
+    if (cp == 0x00D2) { tap_code(KC_GRV); wait_ms(20); register_code(KC_LSFT); tap_code(KC_O); unregister_code(KC_LSFT); return; }
+
+    // ù / Ù (grave)
+    if (cp == 0x00F9) { tap_code(KC_GRV); wait_ms(20); tap_code(KC_U); return; }
+    if (cp == 0x00D9) { tap_code(KC_GRV); wait_ms(20); register_code(KC_LSFT); tap_code(KC_U); unregister_code(KC_LSFT); return; }
+
+    // fallback: ignore unknown unicode
+}
+
+
+// Call this in matrix_scan_user to handle sending macro characters over time without blocking the main loop.
+void matrix_scan_user(void) {
+    if (!macro_running || !macro_str) return;
+    if (timer_elapsed(macro_timer) >= (uint16_t)text_char_delay) {
+        uint8_t b = (uint8_t)macro_str[macro_index];
+
+        if (b >= 0xC2 && (macro_index + 1) < macro_len) {
+            // assume a 2-byte UTF-8 sequence (Latin-1 supplements like à)
+            uint8_t b2 = (uint8_t)macro_str[macro_index + 1];
+            uint16_t cp = ((b & 0x1F) << 6) | (b2 & 0x3F);
+            macro_index += 2;
+            send_unicode_nonblocking(cp);
+        } else {
+            char c = macro_str[macro_index++];
+            send_char_nonblocking(c);
+        }
+        macro_timer = timer_read();
+        if (macro_index >= macro_len) {
+            macro_running = false;
+            macro_str = NULL;
+            macro_len = 0;
+            macro_index = 0;
+        }
+    }
 }
 
 
@@ -244,7 +314,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 	_______, 	_______,  	_______,  	_______, 	_______,  	_______,  	_______,  	_______,  	_______,  	_______, 	_______, 	_______, 	_______, 	_______,	_______,	_______,
 	_______, 	MA_TRES,   	MA_TNOT,   	MA_TNRR,  	_______,   	_______,   	_______,   	_______,   	_______,   	_______,  	_______,   	_______,	_______, 				_______,	_______,
 	_______, 	MA_TREP,   	MA_TNOR,   	_______,  	_______,   	_______,   	_______,   	_______,   	_______,   	_______,  	_______,   	_______,	_______, 				_______,	_______,
-	_______,	_______,   	_______,   	_______,  	_______,   	_______,   	_______,   	_______,   	_______,   	_______,  	_______,	_______, 	 						_______,	_______,
+	_______,	_______,   	_______,   	_______,  	_______,   	MA_TFGC,   	_______,   	_______,   	_______,   	_______,  	_______,	_______, 	 						_______,	_______,
 	_______,				_______,   	_______,   	_______,  	_______,   	_______,   	_______,   	_______,   	_______,	_______,	_______,				_______,	_______,	_______,
 	_______,	_______,	_______,										_______, 							_______,	MO(6),   	_______,				_______,	_______,   _______)
 };
@@ -323,6 +393,7 @@ bool rgb_matrix_indicators_user(void) {
 
         rgb_matrix_set_color(32, 0, 204, 0);   // Q
         rgb_matrix_set_color(33, 0, 204, 0);   // W
+        rgb_matrix_set_color(54, 0, 204, 0);   // G
 
         // Breathing light effect
         rgb_matrix_set_color(41, 0, breathe, 0);   // P
