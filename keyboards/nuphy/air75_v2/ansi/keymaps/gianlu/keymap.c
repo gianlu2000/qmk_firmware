@@ -30,6 +30,8 @@ static uint8_t macro_index = 0; // per tenere traccia del keycode della macro in
 static uint16_t macro_timer = 0; // per gestire il timing della macro
 static const char *macro_str = NULL; // stringa della macro in esecuzione
 static uint16_t macro_len = 0; // lunghezza della stringa della macro
+static int macro_led_index = -1; // indice LED della key che ha avviato la macro
+extern led_config_t g_led_config;
 
 
 // Define custom keycodes
@@ -56,100 +58,119 @@ enum gianlu_keycodes {
 };
 
 // Process custom keycodes
-static void start_macro(const char *s);
+// Quando viene premuto un tasto che corrisponde a una macro, chiamiamo start_macro con la stringa da inviare e l'indice del LED da accendere. La funzione start_macro si occupa di inizializzare lo stato della macro e di accendere il LED corrispondente. Il processo di invio dei caratteri della macro avviene in matrix_scan_user, che controlla periodicamente se è il momento di inviare il prossimo carattere senza bloccare il loop principale di QMK.
+static void start_macro(const char *s, int led_index);
 
+// This function is called on every key event. We use it to trigger our macros and manage the macro state.
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    // Se una macro è in esecuzione, blocca tutti i tasti tranne ESC (stop emergenza)
+    if (macro_running) {
+        if (keycode == KC_ESC) {
+            if (record->event.pressed) {
+                macro_running = false;
+                macro_str = NULL;
+                macro_len = 0;
+                macro_index = 0;
+                macro_led_index = -1;
+                rgb_matrix_reload_from_eeprom();
+            }
+            return false; // consuma l'evento ESC (serve solo per lo stop)
+        }
+        if (record->event.pressed) {
+            return false; // blocca qualsiasi altro tasto mentre la macro è in corso
+        }
+    }
     switch (keycode) {
 
 		// Macro Outlook
         case MA_OBNG:
             if (record->event.pressed) {
-                start_macro("Buongiorno,\n");
+                start_macro("Buongiorno,\n", g_led_config.matrix_co[record->event.key.row][record->event.key.col]);
             }
             break;
 
         case MA_OBNS:
             if (record->event.pressed) {
-                start_macro("Buonasera,\n");
+                start_macro("Buonasera,\n", g_led_config.matrix_co[record->event.key.row][record->event.key.col]);
             }
             break;
 
         case MA_OCDC:
             if (record->event.pressed) {
-                start_macro("come da contatto ");
+                start_macro("come da contatto ", g_led_config.matrix_co[record->event.key.row][record->event.key.col]);
             }
             break;
 
         case MA_OJAB:
             if (record->event.pressed) {
-                start_macro("si notifica la seguente fase in abend\n\n");
+                start_macro("si notifica la seguente fase in abend\n\n", g_led_config.matrix_co[record->event.key.row][record->event.key.col]);
             }
             break;
 
         case MA_OJAS:
             if (record->event.pressed) {
-                start_macro("si notificano le seguenti fasi in abend\n\n");
+                start_macro("si notificano le seguenti fasi in abend\n\n", g_led_config.matrix_co[record->event.key.row][record->event.key.col]);
             }
             break;
 
         case MA_OCOF:
             if (record->event.pressed) {
-                start_macro("si notifica il ritardo del cut-off in oggetto al seguente CP\n\n");
+                start_macro("si notifica il ritardo del cut-off in oggetto al seguente CP\n\n", g_led_config.matrix_co[record->event.key.row][record->event.key.col]);
             }
             break;
 
         case MA_OCOS:
             if (record->event.pressed) {
-                start_macro("si notificano i ritardi dei seguenti cut-off ai CP indicati\n\n");
+                start_macro("si notificano i ritardi dei seguenti cut-off ai CP indicati\n\n", g_led_config.matrix_co[record->event.key.row][record->event.key.col]);
             }
             break;
 
         case MA_OBCH:
             if (record->event.pressed) {
-                start_macro("si notifica il ritardo del giro in oggetto al seguente CP\n\n");
+                start_macro("si notifica il ritardo del giro in oggetto al seguente CP\n\n", g_led_config.matrix_co[record->event.key.row][record->event.key.col]);
             }
             break;
 
         case MA_OBCS:
             if (record->event.pressed) {
-                start_macro("si notificano i ritardi dei seguenti giri ai CP indicati\n\n");
+                start_macro("si notificano i ritardi dei seguenti giri ai CP indicati\n\n", g_led_config.matrix_co[record->event.key.row][record->event.key.col]);
             }
             break;
 
         // Macro Ticket
         case MA_TRES:
             if (record->event.pressed) {
-                start_macro("Restartato");
+                start_macro("Restartato", g_led_config.matrix_co[record->event.key.row][record->event.key.col]);
             }
             break;
 
         case MA_TREP:
             if (record->event.pressed) {
-                start_macro("Restartato come da prosa");
+                start_macro("Restartato come da prosa", g_led_config.matrix_co[record->event.key.row][record->event.key.col]);
             }
             break;
 
         case MA_TNOT:
             if (record->event.pressed) {
-                start_macro("Notificato");
+                start_macro("Notificato", g_led_config.matrix_co[record->event.key.row][record->event.key.col]);
             }
             break;
             
         case MA_TNOR:
             if (record->event.pressed) {
-                start_macro("Notificato al reperibile");
+                start_macro("Notificato al reperibile", g_led_config.matrix_co[record->event.key.row][record->event.key.col]);
             }
             break;
 
         case MA_TNRR:
             if (record->event.pressed) {
-                start_macro("Notificato al reperibile e restartato su sua richiesta");
+                start_macro("Notificato al reperibile e restartato su sua richiesta", g_led_config.matrix_co[record->event.key.row][record->event.key.col]);
             }
             break;
 
         case MA_TFGC:
             if (record->event.pressed) {
-                start_macro("Fase da completare già in complete, fase completata");
+                start_macro("Fase da completare già in complete, fase completata", g_led_config.matrix_co[record->event.key.row][record->event.key.col]);
             }
             break;
 
@@ -158,15 +179,37 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 }
 
 // --- Non-blocking macro engine ---
-static void start_macro(const char *s) {
+// Questa è un'implementazione molto semplice che invia i caratteri di una stringa uno alla volta ogni text_char_delay millisecondi, senza bloccare il loop principale di QMK. Supporta anche alcuni caratteri Unicode comuni (come le lettere accentate italiane) usando sequenze di tasti con dead-key. Puoi espandere la funzione send_unicode_nonblocking per supportare più caratteri se necessario.
+static void start_macro(const char *s, int led_index) {
     if (!s) return;
     macro_str = s;
     macro_len = (uint16_t)strlen(s);
     macro_index = 0;
     macro_timer = timer_read();
     macro_running = true;
+
+    if (led_index >= 0 && led_index < RGB_MATRIX_LED_COUNT) {
+        macro_led_index = led_index;
+    } else {
+        macro_led_index = -1;
+    }
+
+    // Metti in modalità colore fisso e mostra solo il LED della macro e quello di ESC
+    rgb_matrix_mode_noeeprom(RGB_MATRIX_SOLID_COLOR);
+    for (uint16_t i = 0; i < RGB_MATRIX_LED_COUNT; ++i) {
+        rgb_matrix_set_color(i, 0, 0, 0);
+    }
+    // indice LED del tasto ESC (prima riga, prima colonna)
+    int esc_led_index = g_led_config.matrix_co[0][0];
+    if (esc_led_index != NO_LED && esc_led_index >= 0 && esc_led_index < RGB_MATRIX_LED_COUNT) {
+        rgb_matrix_set_color((uint8_t)esc_led_index, 255, 0, 0);
+    }
+    if (macro_led_index >= 0) {
+        rgb_matrix_set_color((uint8_t)macro_led_index, 255, 160, 0);
+    }
 }
 
+// Invia un singolo carattere senza bloccare. Supporta solo un sottoinsieme di caratteri ASCII e alcuni simboli comuni. Puoi espandere questa funzione per supportare più caratteri se necessario.
 static void send_char_nonblocking(char c) {
     if (c == '\n') { tap_code(KC_ENT); return; }
     if (c == ' ') { tap_code(KC_SPC); return; }
@@ -231,6 +274,7 @@ void matrix_scan_user(void) {
     if (timer_elapsed(macro_timer) >= (uint16_t)text_char_delay) {
         uint8_t b = (uint8_t)macro_str[macro_index];
 
+        // Check if this is the start of a UTF-8 sequence for a character we want to support
         if (b >= 0xC2 && (macro_index + 1) < macro_len) {
             // assume a 2-byte UTF-8 sequence (Latin-1 supplements like à)
             uint8_t b2 = (uint8_t)macro_str[macro_index + 1];
@@ -238,6 +282,7 @@ void matrix_scan_user(void) {
             macro_index += 2;
             send_unicode_nonblocking(cp);
         } else {
+            // Regular ASCII character
             char c = macro_str[macro_index++];
             send_char_nonblocking(c);
         }
@@ -247,12 +292,15 @@ void matrix_scan_user(void) {
             macro_str = NULL;
             macro_len = 0;
             macro_index = 0;
+            macro_led_index = -1;
+            rgb_matrix_reload_from_eeprom();
         }
     }
 }
 
 
 // Define layers
+// Vengono definiti i vari layer, con il layer 0 che è quello principale per Mac, il layer 1 per le funzioni Fn su Mac, il layer 2 per Windows, il layer 3 per le funzioni Fn su Windows, e i layer 4-6 per le macro di Outlook e Ticket. Ogni tasto è mappato a una funzione specifica, e i tasti che attivano le macro sono evidenziati con i colori corrispondenti nei layer Fn.
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 // layer Mac
@@ -336,10 +384,29 @@ layer_state_t layer_state_set_user(layer_state_t state) {
 }
 
 
-// Colora i tasti in modo diverso quando sei nel layer 5
+
 // tool per prendere i colori: https://www.rapidtables.com/web/color/RGB_Color.html
+
+// RGB Matrix indicators for macros and layer states
 bool rgb_matrix_indicators_user(void) {
+    // Se una macro è in esecuzione, mostra solo il LED della macro e spegni gli altri. Altrimenti, se sei nei layer Fn, mostra i colori specifici per quei layer. Se non sei in nessuno dei layer Fn, lascia tutto come è (effetti normali).
+
+    if (macro_running) {
+        // spegni tutti i LED e accendi solo ESC + quello della macro in corso
+        for (uint16_t i = 0; i < RGB_MATRIX_LED_COUNT; ++i) {
+            rgb_matrix_set_color(i, 0, 0, 0);
+        }
+        int esc_led = g_led_config.matrix_co[0][0];
+        if (esc_led != NO_LED && esc_led >= 0 && esc_led < RGB_MATRIX_LED_COUNT) {
+            rgb_matrix_set_color((uint8_t)esc_led, 255, 0, 0);
+        }
+        if (macro_led_index >= 0 && macro_led_index < RGB_MATRIX_LED_COUNT) {
+            rgb_matrix_set_color((uint8_t)macro_led_index, 255, 160, 0);
+        }
+        return false;
+    }
     if (layer_state_is(5)) {
+        // se sei nel layer Fn di Outlook, mostra i colori specifici per quel layer e un effetto di respiro sul tasto O
 
         // Effetto respiro semplice (onda triangolare)
 
@@ -372,6 +439,7 @@ bool rgb_matrix_indicators_user(void) {
         rgb_matrix_set_color(40, 0, 0, breathe);   // Tasto O
 
     } else if (layer_state_is(6)) {
+        // se sei nel layer Fn di Ticket, mostra i colori specifici per quel layer e un effetto di respiro sul tasto P
 
         uint16_t t = timer_read();
         uint8_t phase = (t >> 3);   // velocità (più grande = più lento)
