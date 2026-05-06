@@ -60,6 +60,7 @@ enum gianlu_keycodes {
 // Process custom keycodes
 // Quando viene premuto un tasto che corrisponde a una macro, chiamiamo start_macro con la stringa da inviare e l'indice del LED da accendere. La funzione start_macro si occupa di inizializzare lo stato della macro e di accendere il LED corrispondente. Il processo di invio dei caratteri della macro avviene in matrix_scan_user, che controlla periodicamente se è il momento di inviare il prossimo carattere senza bloccare il loop principale di QMK.
 static void start_macro(const char *s, int led_index);
+static void get_led_color_for_index(uint8_t idx, uint8_t *r, uint8_t *g, uint8_t *b);
 
 // This function is called on every key event. We use it to trigger our macros and manage the macro state.
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
@@ -200,12 +201,17 @@ static void start_macro(const char *s, int led_index) {
         rgb_matrix_set_color(i, 0, 0, 0);
     }
     // indice LED del tasto ESC (prima riga, prima colonna)
-    int esc_led_index = g_led_config.matrix_co[0][0];
+    int esc_led_index = g_led_config.matrix_co[0][0];   // definisci l'indice del LED di ESC
     if (esc_led_index != NO_LED && esc_led_index >= 0 && esc_led_index < RGB_MATRIX_LED_COUNT) {
         rgb_matrix_set_color((uint8_t)esc_led_index, 255, 0, 0);
     }
     if (macro_led_index >= 0) {
-        rgb_matrix_set_color((uint8_t)macro_led_index, 255, 160, 0);
+        // Se il tasto delle macro ha l'index maggiore di 0, accendi il LED corrispondente
+        // accendi il LED del tasto che ha avviato la macro con un colore definito in RGB
+
+        uint8_t mr = 255, mg = 160, mb = 0;
+        get_led_color_for_index((uint8_t)macro_led_index, &mr, &mg, &mb);
+        rgb_matrix_set_color((uint8_t)macro_led_index, mr, mg, mb);
     }
 }
 
@@ -234,6 +240,7 @@ static void send_char_nonblocking(char c) {
 }
 
 // This is a very basic implementation that only handles a few common Unicode characters.
+// Puoi espandere questa funzione per supportare più caratteri Unicode se necessario. L'idea è di mappare i caratteri Unicode che ti interessano a sequenze di tasti che funzionano con il layout della tastiera del tuo computer (ad esempio, usando dead-key per le lettere accentate italiane su layout US-International).
 static void send_unicode_nonblocking(uint16_t cp) {
     // Map common Italian accented letters using dead-keys on
     // US-International host layout.
@@ -388,11 +395,72 @@ layer_state_t layer_state_set_user(layer_state_t state) {
 // tool per prendere i colori: https://www.rapidtables.com/web/color/RGB_Color.html
 
 // RGB Matrix indicators for macros and layer states
+// Restituisce il colore assegnato a un indice LED in base allo stato dei layer
+static void get_led_color_for_index(uint8_t idx, uint8_t *r, uint8_t *g, uint8_t *b) {
+    // fallback: arancione
+    *r = 255; *g = 160; *b = 0;
+
+    if (layer_state_is(5)) {
+        // breathing value usato per il tasto O nel layer 5
+        uint16_t t = timer_read();
+        uint8_t phase = (t >> 3);
+        uint8_t breathe;
+        if (phase & 0x80) {
+            breathe = 255 - ((phase & 0x7F) << 1);
+        } else {
+            breathe = (phase & 0x7F) << 1;
+        }
+
+        switch (idx) {
+            case 29: *r = 255; *g = 0;   *b = 0;   break; // 1
+            case 28: *r = 255; *g = 255; *b = 0;   break; // 2
+            case 27: *r = 0;   *g = 255; *b = 0;   break; // 3
+            case 26: *r = 0;   *g = 0;   *b = 255; break; // 4
+            case 25: *r = 127; *g = 0;   *b = 255; break; // 5
+
+            case 32: *r = 255; *g = 0;   *b = 0;   break; // Q
+            case 34: *r = 0;   *g = 255; *b = 0;   break; // E
+            case 35: *r = 0;   *g = 0;   *b = 255; break; // R
+            case 36: *r = 127; *g = 0;   *b = 255; break; // T
+
+            case 40: *r = 0;   *g = 0;   *b = breathe; break; // O (breathing)
+            default: break;
+        }
+        return;
+    } else if (layer_state_is(6)) {
+        // breathing value usato per il tasto P nel layer 6 (ridotto 60%)
+        uint16_t t = timer_read();
+        uint8_t phase = (t >> 3);
+        uint8_t breathe;
+        if (phase & 0x80) {
+            breathe = 255 - ((phase & 0x7F) << 1);
+        } else {
+            breathe = (phase & 0x7F) << 1;
+        }
+        breathe = (breathe * 153) / 255; // ~60%
+
+        switch (idx) {
+            case 29: *r = 0;   *g = 204; *b = 0; break; // 1
+            case 28: *r = 0;   *g = 204; *b = 0; break; // 2
+            case 27: *r = 0;   *g = 204; *b = 0; break; // 3
+
+            case 32: *r = 0;   *g = 204; *b = 0; break; // Q
+            case 33: *r = 0;   *g = 204; *b = 0; break; // W
+            case 54: *r = 0;   *g = 204; *b = 0; break; // G
+
+            case 41: *r = 0;   *g = breathe; *b = 0; break; // P (breathing)
+            default: break;
+        }
+        return;
+    }
+    // altrimenti rimane il fallback
+}
+
 bool rgb_matrix_indicators_user(void) {
     // Se una macro è in esecuzione, mostra solo il LED della macro e spegni gli altri. Altrimenti, se sei nei layer Fn, mostra i colori specifici per quei layer. Se non sei in nessuno dei layer Fn, lascia tutto come è (effetti normali).
 
     if (macro_running) {
-        // spegni tutti i LED e accendi solo ESC + quello della macro in corso
+        // spegni tutti i LED e accendi solo ESC + quello della macro in corso (lampeggiante)
         for (uint16_t i = 0; i < RGB_MATRIX_LED_COUNT; ++i) {
             rgb_matrix_set_color(i, 0, 0, 0);
         }
@@ -401,7 +469,17 @@ bool rgb_matrix_indicators_user(void) {
             rgb_matrix_set_color((uint8_t)esc_led, 255, 0, 0);
         }
         if (macro_led_index >= 0 && macro_led_index < RGB_MATRIX_LED_COUNT) {
-            rgb_matrix_set_color((uint8_t)macro_led_index, 255, 160, 0);
+            uint8_t mr = 255, mg = 160, mb = 0;
+            get_led_color_for_index((uint8_t)macro_led_index, &mr, &mg, &mb);
+
+            // Semlice lampeggio on/off (periodo 600ms -> 300ms on, 300ms off)
+            uint16_t t = timer_read();
+            bool on = (((t / 300) & 1) == 0);
+            if (on) {
+                rgb_matrix_set_color((uint8_t)macro_led_index, mr, mg, mb);
+            } else {
+                rgb_matrix_set_color((uint8_t)macro_led_index, 0, 0, 0);
+            }
         }
         return false;
     }
