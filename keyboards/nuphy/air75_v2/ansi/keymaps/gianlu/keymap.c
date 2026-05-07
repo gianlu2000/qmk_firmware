@@ -31,6 +31,9 @@ static uint16_t macro_timer = 0; // per gestire il timing della macro
 static const char *macro_str = NULL; // stringa della macro in esecuzione
 static uint16_t macro_len = 0; // lunghezza della stringa della macro
 static int macro_led_index = -1; // indice LED della key che ha avviato la macro
+static int macro_origin_layer = -1; // layer in cui è stata avviata la macro
+static bool macro_finished = false; // flag per indicare che la macro è finita e stiamo mostrando il segnale finale
+static uint16_t macro_finish_timer = 0; // timer per la durata del segnale finale
 extern led_config_t g_led_config;
 
 
@@ -62,7 +65,16 @@ enum gianlu_keycodes {
 static void start_macro(const char *s, int led_index);
 static void get_led_color_for_index(uint8_t idx, uint8_t *r, uint8_t *g, uint8_t *b);
 
-// This function is called on every key event. We use it to trigger our macros and manage the macro state.
+/**
+ * process_record_user
+ * Quando: chiamata su ogni evento tasto dal core QMK.
+ * Scopo: intercettare i keycode custom per avviare macro; mentre una macro è in
+ *        esecuzione blocca tutti i tasti eccetto `KC_ESC` (stop emergenza).
+ * Parametri:
+ *   - `keycode`: codice del tasto generato dall'evento.
+ *   - `record`: puntatore a `keyrecord_t` con stato (pressed/released) e posizione del tasto.
+ * Ritorno: `true` per permettere l'elaborazione standard del tasto, `false` per consumare l'evento.
+ */
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     // Se una macro è in esecuzione, blocca tutti i tasti tranne ESC (stop emergenza)
     if (macro_running) {
@@ -73,6 +85,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 macro_len = 0;
                 macro_index = 0;
                 macro_led_index = -1;
+                macro_origin_layer = -1;
+                macro_finished = false;
+                macro_finish_timer = 0;
                 rgb_matrix_reload_from_eeprom();
             }
             return false; // consuma l'evento ESC (serve solo per lo stop)
@@ -180,7 +195,19 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 }
 
 // --- Non-blocking macro engine ---
-// Questa è un'implementazione molto semplice che invia i caratteri di una stringa uno alla volta ogni text_char_delay millisecondi, senza bloccare il loop principale di QMK. Supporta anche alcuni caratteri Unicode comuni (come le lettere accentate italiane) usando sequenze di tasti con dead-key. Puoi espandere la funzione send_unicode_nonblocking per supportare più caratteri se necessario.
+// Questa è un'implementazione molto semplice che invia i caratteri di una stringa uno alla volta ogni text_char_delay millisecondi, senza bloccare il loop principale di QMK.
+/**
+ * start_macro(const char *s, int led_index)
+ * Quando: chiamata da `process_record_user` quando si preme un keycode di macro.
+ * Scopo: inizializza lo stato della macro (stringa da inviare, timer, LED), imposta il
+ *        driver RGB in modalità colore fisso e accende il LED di ESC e quello del tasto
+ *        che ha avviato la macro.
+ * Parametri:
+ *   - `s`: puntatore alla stringa (testo) da inviare.
+ *   - `led_index`: indice LED (g_led_config.matrix_co[row][col]) del tasto che ha avviato la macro;
+ *                  se negativo viene ignorato.
+ * Effetti collaterali: setta `macro_running=true`, `macro_origin_layer=biton32(layer_state)`.
+ */
 static void start_macro(const char *s, int led_index) {
     if (!s) return;
     macro_str = s;
@@ -188,6 +215,8 @@ static void start_macro(const char *s, int led_index) {
     macro_index = 0;
     macro_timer = timer_read();
     macro_running = true;
+    // registra il layer corrente come layer d'origine della macro
+    macro_origin_layer = biton32(layer_state);
 
     if (led_index >= 0 && led_index < RGB_MATRIX_LED_COUNT) {
         macro_led_index = led_index;
@@ -215,7 +244,15 @@ static void start_macro(const char *s, int led_index) {
     }
 }
 
-// Invia un singolo carattere senza bloccare. Supporta solo un sottoinsieme di caratteri ASCII e alcuni simboli comuni. Puoi espandere questa funzione per supportare più caratteri se necessario.
+/**
+ * send_char_nonblocking(char c)
+ * Quando: chiamata internamente da `matrix_scan_user` per inviare singoli caratteri ASCII senza bloccare il loop.
+ * Scopo: mappare caratteri comuni a `tap_code` appropriati; gestisce newline, spazio, punteggiatura,
+ *        cifre e lettere (gestisce maiuscole usando il tasto Shift).
+ * Parametri:
+ *   - `c`: carattere ASCII da inviare.
+ * Nota: i caratteri non supportati vengono ignorati (fallback).
+ */
 static void send_char_nonblocking(char c) {
     if (c == '\n') { tap_code(KC_ENT); return; }
     if (c == ' ') { tap_code(KC_SPC); return; }
@@ -239,8 +276,16 @@ static void send_char_nonblocking(char c) {
     // fallback: ignore unknown chars
 }
 
-// This is a very basic implementation that only handles a few common Unicode characters.
-// Puoi espandere questa funzione per supportare più caratteri Unicode se necessario. L'idea è di mappare i caratteri Unicode che ti interessano a sequenze di tasti che funzionano con il layout della tastiera del tuo computer (ad esempio, usando dead-key per le lettere accentate italiane su layout US-International).
+/**
+ * send_unicode_nonblocking(uint16_t cp)
+ * Quando: chiamata internamente da `matrix_scan_user` quando viene rilevata una sequenza UTF-8
+ *        corrispondente a un code point supportato.
+ * Scopo: inviare caratteri accentati italiani (e altri code point implementati) tramite sequenze
+ *        di tasti e dead-key in modo non bloccante.
+ * Parametri:
+ *   - `cp`: code point Unicode (es. 0x00E0 per 'à').
+ * Nota: implementa solo un sottoinsieme di code point comuni; gli altri vengono ignorati.
+ */
 static void send_unicode_nonblocking(uint16_t cp) {
     // Map common Italian accented letters using dead-keys on
     // US-International host layout.
@@ -275,7 +320,17 @@ static void send_unicode_nonblocking(uint16_t cp) {
 }
 
 
-// Call this in matrix_scan_user to handle sending macro characters over time without blocking the main loop.
+/**
+ * matrix_scan_user
+ * Quando: chiamata ad ogni scan della matrice dal core QMK (loop principale).
+ * Scopo: motore non-bloccante per l'invio delle macro; invia il prossimo carattere della
+ *        stringa della macro ogni `text_char_delay` millisecondi, gestisce sequenze UTF-8
+ *        e segnala il completamento della macro (imposta `macro_finished`).
+ * Parametri: nessuno.
+ * Effetti collaterali: quando la macro termina setta `macro_finished=true`, avvia il
+ *        `macro_finish_timer` e spegne immediatamente il LED di stop (ESC) per preparare
+ *        il segnale finale di completamento.
+ */
 void matrix_scan_user(void) {
     if (!macro_running || !macro_str) return;
     if (timer_elapsed(macro_timer) >= (uint16_t)text_char_delay) {
@@ -295,12 +350,19 @@ void matrix_scan_user(void) {
         }
         macro_timer = timer_read();
         if (macro_index >= macro_len) {
+            // la macro è terminata: entriamo nello stato "finished"
+            // Manteniamo macro_led_index e macro_origin_layer per il segnale finale
             macro_running = false;
             macro_str = NULL;
             macro_len = 0;
             macro_index = 0;
-            macro_led_index = -1;
-            rgb_matrix_reload_from_eeprom();
+            macro_finish_timer = timer_read();
+            macro_finished = true;
+            // spegni immediatamente il LED di stop (ESC)
+            int esc_led_index = g_led_config.matrix_co[0][0];
+            if (esc_led_index != NO_LED && esc_led_index >= 0 && esc_led_index < RGB_MATRIX_LED_COUNT) {
+                rgb_matrix_set_color((uint8_t)esc_led_index, 0, 0, 0);
+            }
         }
     }
 }
@@ -375,7 +437,15 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 };
 
 
-// Metti in pausa l’effetto quando entri nel layer 5 o 6, e ripristinalo quando esci
+/**
+ * layer_state_set_user
+ * Quando: chiamata dal core QMK quando cambia lo stato dei layer.
+ * Scopo: quando si entra nei layer 5 o 6 (layer macro) mette in pausa l'effetto RGB e spegne i LED;
+ *        quando si esce ripristina l'effetto salvato dall'EEPROM.
+ * Parametri:
+ *   - `state`: nuovo `layer_state_t` che rappresenta i layer attivi.
+ * Ritorno: deve restituire il `layer_state_t` risultante (qui viene semplicemente restituito `state`).
+ */
 layer_state_t layer_state_set_user(layer_state_t state) {
     if (layer_state_cmp(state, 5) || layer_state_cmp(state, 6)) { // se sei in uno dei layer Fn
         
@@ -394,13 +464,31 @@ layer_state_t layer_state_set_user(layer_state_t state) {
 
 // tool per prendere i colori: https://www.rapidtables.com/web/color/RGB_Color.html
 
-// RGB Matrix indicators for macros and layer states
-// Restituisce il colore assegnato a un indice LED in base allo stato dei layer
+/**
+ * get_led_color_for_index(uint8_t idx, uint8_t *r, uint8_t *g, uint8_t *b)
+ * Quando: invocata dal codice di indicazione RGB per ottenere il colore di un LED specifico.
+ * Scopo: impostare `r,g,b` in base al "layer di interesse". Se una macro è in esecuzione
+ *        usa `macro_origin_layer` come riferimento, altrimenti usa il layer corrente.
+ * Parametri:
+ *   - `idx`: indice del LED (0..RGB_MATRIX_LED_COUNT-1).
+ *   - `r,g,b`: puntatori ai valori R,G,B che verranno impostati dalla funzione.
+ * Output: imposta i valori attraverso i puntatori; fallback arancione se non ci sono corrispondenze.
+ */
 static void get_led_color_for_index(uint8_t idx, uint8_t *r, uint8_t *g, uint8_t *b) {
     // fallback: arancione
     *r = 255; *g = 160; *b = 0;
 
-    if (layer_state_is(5)) {
+    // Se c'è una macro in esecuzione useremo come riferimento il layer
+    // in cui la macro è stata avviata (macro_origin_layer). Altrimenti
+    // usiamo il layer corrente.
+    int layer_of_interest = -1;
+    if (macro_running && macro_origin_layer >= 0) {
+        layer_of_interest = macro_origin_layer;
+    } else {
+        layer_of_interest = biton32(layer_state);
+    }
+
+    if (layer_of_interest == 5) {
         // breathing value usato per il tasto O nel layer 5
         uint16_t t = timer_read();
         uint8_t phase = (t >> 3);
@@ -427,7 +515,7 @@ static void get_led_color_for_index(uint8_t idx, uint8_t *r, uint8_t *g, uint8_t
             default: break;
         }
         return;
-    } else if (layer_state_is(6)) {
+    } else if (layer_of_interest == 6) {
         // breathing value usato per il tasto P nel layer 6 (ridotto 60%)
         uint16_t t = timer_read();
         uint8_t phase = (t >> 3);
@@ -456,6 +544,16 @@ static void get_led_color_for_index(uint8_t idx, uint8_t *r, uint8_t *g, uint8_t
     // altrimenti rimane il fallback
 }
 
+/**
+ * rgb_matrix_indicators_user
+ * Quando: chiamata dal driver RGB per applicare indicatori custom ad ogni ciclo di aggiornamento RGB.
+ * Scopo: mostrare lo stato delle macro o i colori dei layer:
+ *   - se `macro_running`: spegne tutti i LED, accende ESC (rosso) e fa lampeggiare il LED della macro;
+ *   - se `macro_finished`: mostra il LED della macro in verde per 1s;
+ *   - altrimenti: mostra i colori specifici dei layer (5 e 6) o lascia gli effetti normali.
+ * Parametri: nessuno.
+ * Ritorno: `false` per indicare che la gestione custom è stata applicata.
+ */
 bool rgb_matrix_indicators_user(void) {
     // Se una macro è in esecuzione, mostra solo il LED della macro e spegni gli altri. Altrimenti, se sei nei layer Fn, mostra i colori specifici per quei layer. Se non sei in nessuno dei layer Fn, lascia tutto come è (effetti normali).
 
@@ -482,6 +580,28 @@ bool rgb_matrix_indicators_user(void) {
             }
         }
         return false;
+    }
+    if (macro_finished) {
+        // durante il periodo di segnale finale mostra il LED della macro in verde
+        if (timer_elapsed(macro_finish_timer) < 1000) {
+            for (uint16_t i = 0; i < RGB_MATRIX_LED_COUNT; ++i) {
+                rgb_matrix_set_color(i, 0, 0, 0);
+            }
+            int esc_led = g_led_config.matrix_co[0][0];
+            if (esc_led != NO_LED && esc_led >= 0 && esc_led < RGB_MATRIX_LED_COUNT) {
+                rgb_matrix_set_color((uint8_t)esc_led, 0, 0, 0);
+            }
+            if (macro_led_index >= 0 && macro_led_index < RGB_MATRIX_LED_COUNT) {
+                rgb_matrix_set_color((uint8_t)macro_led_index, 0, 204, 0);
+            }
+            return false;
+        } else {
+            // termina il periodo di segnale e ripristina l'effetto precedente
+            macro_finished = false;
+            macro_led_index = -1;
+            macro_origin_layer = -1;
+            rgb_matrix_reload_from_eeprom();
+        }
     }
     if (layer_state_is(5)) {
         // se sei nel layer Fn di Outlook, mostra i colori specifici per quel layer e un effetto di respiro sul tasto O
