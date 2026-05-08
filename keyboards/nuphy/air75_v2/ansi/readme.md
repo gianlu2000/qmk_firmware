@@ -18,6 +18,7 @@ Questa configurazione è basata su QMK per la tastiera **Nuphy Air75 V2 (ANSI La
 - Multi-layer (Mac / Windows)
 - Supporto macro avanzate
 - Personalizzazione completa della keymap
+- Quick Guide/Poster [download](https://cdn.shopify.com/s/files/1/0268/7297/1373/files/NuPhy_Air75_V2_Quick_Guide.pdf?v=1696498123)
 
 ### Struttura del progetto
 
@@ -61,12 +62,15 @@ Dopo aver collegato la tastiera in modalità bootload, con il software QMK toolb
 
 1. Apri il file `.bin` buildato con la procedura sopra
 2. Eseguire il flash
-3. Attendi il buon esito del flas
+3. Attendi il buon esito del flash
 4. Scollega e ricollega la tastiera per uscire dal bootload e iniziare ad utilizzare la tastiera con il nuovo firmware caricato
 
+## 🎛 Configurazione
 
+### 🧠 Layers
 
-
+| Layer | Descrizione |
+| :---- | :---------- |
 
 
 
