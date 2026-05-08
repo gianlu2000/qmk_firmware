@@ -64,6 +64,7 @@ enum gianlu_keycodes {
 // Quando viene premuto un tasto che corrisponde a una macro, chiamiamo start_macro con la stringa da inviare e l'indice del LED da accendere. La funzione start_macro si occupa di inizializzare lo stato della macro e di accendere il LED corrispondente. Il processo di invio dei caratteri della macro avviene in matrix_scan_user, che controlla periodicamente se è il momento di inviare il prossimo carattere senza bloccare il loop principale di QMK.
 static void start_macro(const char *s, int led_index);
 static void get_led_color_for_index(uint8_t idx, uint8_t *r, uint8_t *g, uint8_t *b);
+static int get_layer_indicator_led_index(int layer_of_interest);
 
 /**
  * process_record_user
@@ -544,6 +545,31 @@ static void get_led_color_for_index(uint8_t idx, uint8_t *r, uint8_t *g, uint8_t
     // altrimenti rimane il fallback
 }
 
+// Ritorna l'indice LED usato come "indicatore di layer" per i layer di macro
+static int get_layer_indicator_led_index(int layer_of_interest) {
+    if (layer_of_interest == 5) {
+        return 40; // tasto O (layer Outlook)
+    }
+    if (layer_of_interest == 6) {
+        return 41; // tasto P (layer Ticket)
+    }
+    return -1;
+}
+
+// Ritorna il colore statico (no-breathe) da usare quando il tasto layer deve solo lampeggiare
+static void get_static_layer_color(int layer_of_interest, uint8_t *r, uint8_t *g, uint8_t *b) {
+    // fallback: arancione (stesso colore della macro)
+    *r = 255; *g = 160; *b = 0;
+    if (layer_of_interest == 5) {
+        *r = 0; *g = 0; *b = 255; // Outlook - blu statico
+        return;
+    }
+    if (layer_of_interest == 6) {
+        *r = 0; *g = 204; *b = 0; // Ticket - verde statico
+        return;
+    }
+}
+
 /**
  * rgb_matrix_indicators_user
  * Quando: chiamata dal driver RGB per applicare indicatori custom ad ogni ciclo di aggiornamento RGB.
@@ -566,23 +592,33 @@ bool rgb_matrix_indicators_user(void) {
         if (esc_led != NO_LED && esc_led >= 0 && esc_led < RGB_MATRIX_LED_COUNT) {
             rgb_matrix_set_color((uint8_t)esc_led, 255, 0, 0);
         }
-        if (macro_led_index >= 0 && macro_led_index < RGB_MATRIX_LED_COUNT) {
-            uint8_t mr = 255, mg = 160, mb = 0;
-            get_led_color_for_index((uint8_t)macro_led_index, &mr, &mg, &mb);
 
-            // Semlice lampeggio on/off (periodo 600ms -> 300ms on, 300ms off)
-            uint16_t t = timer_read();
-            bool on = (((t / 300) & 1) == 0);
-            if (on) {
-                rgb_matrix_set_color((uint8_t)macro_led_index, mr, mg, mb);
-            } else {
-                rgb_matrix_set_color((uint8_t)macro_led_index, 0, 0, 0);
+        // indice LED del tasto indicatore del layer di origine (es. O per layer 5, P per layer 6)
+        int layer_indicator = get_layer_indicator_led_index(macro_origin_layer);
+
+        // Calcola i colori per il tasto layer (se presente) usando colore statico (no-breathe)
+        uint8_t lr = 0, lg = 0, lb = 0;
+        if (layer_indicator >= 0 && layer_indicator < RGB_MATRIX_LED_COUNT) {
+            get_static_layer_color(macro_origin_layer, &lr, &lg, &lb);
+        }
+
+        // Lampeggio: macro key in arancione fisso, tasto layer nel suo colore assegnato
+        uint16_t t = timer_read();
+        bool on = (((t / 300) & 1) == 0); // 300ms on/off
+        if (on) {
+            if (macro_led_index >= 0 && macro_led_index < RGB_MATRIX_LED_COUNT) {
+                rgb_matrix_set_color((uint8_t)macro_led_index, 255, 160, 0); // arancione
             }
+            if (layer_indicator >= 0 && layer_indicator < RGB_MATRIX_LED_COUNT) {
+                rgb_matrix_set_color((uint8_t)layer_indicator, lr, lg, lb);
+            }
+        } else {
+            // off: lascia spenti (già resettati sopra)
         }
         return false;
     }
     if (macro_finished) {
-        // durante il periodo di segnale finale mostra il LED della macro in verde
+        // durante il periodo di segnale finale mostra il LED della macro in verde (1s)
         if (timer_elapsed(macro_finish_timer) < 1000) {
             for (uint16_t i = 0; i < RGB_MATRIX_LED_COUNT; ++i) {
                 rgb_matrix_set_color(i, 0, 0, 0);
@@ -594,6 +630,11 @@ bool rgb_matrix_indicators_user(void) {
             if (macro_led_index >= 0 && macro_led_index < RGB_MATRIX_LED_COUNT) {
                 rgb_matrix_set_color((uint8_t)macro_led_index, 0, 204, 0);
             }
+            // mostra anche il tasto indicatore del layer in verde per 1s (coordinato col tasto macro) - temporaneamente disattivato
+            /* int layer_indicator = get_layer_indicator_led_index(macro_origin_layer);
+            if (layer_indicator >= 0 && layer_indicator < RGB_MATRIX_LED_COUNT) {
+                rgb_matrix_set_color((uint8_t)layer_indicator, 0, 204, 0);
+            } */
             return false;
         } else {
             // termina il periodo di segnale e ripristina l'effetto precedente
@@ -604,6 +645,10 @@ bool rgb_matrix_indicators_user(void) {
         }
     }
     if (layer_state_is(5)) {
+        // se una macro è in riproduzione e l'origine è questo layer, non applicare l'effetto respiro
+        if (macro_running && macro_origin_layer == 5) {
+            return false;
+        }
         // se sei nel layer Fn di Outlook, mostra i colori specifici per quel layer e un effetto di respiro sul tasto O
 
         // Effetto respiro semplice (onda triangolare)
@@ -637,6 +682,10 @@ bool rgb_matrix_indicators_user(void) {
         rgb_matrix_set_color(40, 0, 0, breathe);   // Tasto O
 
     } else if (layer_state_is(6)) {
+        // se una macro è in riproduzione e l'origine è questo layer, non applicare l'effetto respiro
+        if (macro_running && macro_origin_layer == 6) {
+            return false;
+        }
         // se sei nel layer Fn di Ticket, mostra i colori specifici per quel layer e un effetto di respiro sul tasto P
 
         uint16_t t = timer_read();
