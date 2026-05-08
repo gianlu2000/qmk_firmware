@@ -33,7 +33,7 @@ keyboards/nuphy/air75_v2/ansi/
 utilizzando il software QMK SYS:
 1. Entra nella directory `qmk_firmware` dove è salvato il codice, in questo caso:
    ```
-   Documents/Github/qmk_firmware
+   Documents/GitHub/qmk_firmware
    ```
 
 2. Per creare il file `.bin` utilizzando la keymap personalizzata:
@@ -41,7 +41,7 @@ utilizzando il software QMK SYS:
    make nuphy/air75_v2/ansi:<NOME KEYMAP>
    ```
 
-   In questo caso usiamo la keymap `gianlu`, quindi il comando da esewguire sarà questo:
+   👉 In questo caso usiamo la keymap `gianlu`, quindi il comando da esewguire sarà questo:
    ```
    make nuphy/air75_v2/ansi:gianlu
    ```
@@ -60,8 +60,8 @@ Enter the bootloader in one way:
 
 Dopo aver collegato la tastiera in modalità bootload, con il software QMK toolbox:
 
-1. Apri il file `.bin` buildato con la procedura sopra
-2. Eseguire il flash
+1. Apri il file `.bin` buildato con la procedura sopra dalla cartella `qmk_firmware`
+2. Eseguire il flash del firmware sulla tastiera
 3. Attendi il buon esito del flash
 4. Scollega e ricollega la tastiera per uscire dal bootload e iniziare ad utilizzare la tastiera con il nuovo firmware caricato
 
