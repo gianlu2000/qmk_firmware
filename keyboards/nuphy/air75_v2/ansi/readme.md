@@ -29,15 +29,40 @@ keyboards/nuphy/air75_v2/ansi/
 
 ### 🔨 Creazione file `.bin`
 
-1. Clonare la repository
-   <!-- valutare se inserire il fork invece del clone -->
-   ```bash
-   git clone https://github.com/<tuo-repo>/qmk_firmware.git cd qmk_firmware
+utilizzando il software QMK SYS:
+1. Entra nella directory `qmk_firmware` dove è salvato il codice, in questo caso:
    ```
-    
-3. Aggiornare i submodules
+   Documents/Github/qmk_firmware
+   ```
 
-<!-- finire di aggiornare doc da chatgpt --> 
+2. Per creare il file `.bin` utilizzando la keymap personalizzata:
+   ```
+   make nuphy/air75_v2/ansi:<NOME KEYMAP>
+   ```
+
+   In questo caso usiamo la keymap `gianlu`, quindi il comando da esewguire sarà questo:
+   ```
+   make nuphy/air75_v2/ansi:gianlu
+   ```
+
+> [!NOTE]
+> See the [build environment setup](https://docs.qmk.fm/#/getting_started_build_tools) and the [make instructions](https://docs.qmk.fm/#/getting_started_make_guide) for more information. Brand new to QMK? Start with our [Complete Newbs Guide](https://docs.qmk.fm/#/newbs).
+
+
+### ⚡ Flash firmware 
+
+#### Bootload
+
+Enter the bootloader in one way:
+
+* **Bootmagic reset**: Hold down the key at (0,0) in the matrix (usually the top left key or Escape) and plug in the keyboard
+
+Dopo aver collegato la tastiera in modalità bootload, con il software QMK toolbox:
+
+1. Apri il file `.bin` buildato con la procedura sopra
+2. Eseguire il flash
+3. Attendi il buon esito del flas
+4. Scollega e ricollega la tastiera per uscire dal bootload e iniziare ad utilizzare la tastiera con il nuovo firmware caricato
 
 
 
