@@ -1,7 +1,52 @@
-# NuPhy Air75 V2
+# NuPhy Air75 V2 ANSI - Custom QMK Firmware
 
 *NuPhy Air75 V2 is a standard 84 key keyboard.*
 ![NuPhy Air75 V2](https://bit.ly/486pSkN)
+
+---
+<!-- INIZIO NUOVA DOCUMNETAZIONE -->
+
+## 📌 Info generali
+
+Questa configurazione è basata su QMK per la tastiera **Nuphy Air75 V2 (ANSI Layout)**
+
+### Caratteristiche principali
+
+- Layout 75% ANSU
+- Supporto QMK/VIA
+- RGB per-key + side LED
+- Multi-layer (Mac / Windows)
+- Supporto macro avanzate
+- Personalizzazione completa della keymap
+
+### Struttura del progetto
+
+```text
+keyboards/nuphy/air75_v2/ansi/
+```
+
+## ⚙️ Installazione nuova configurazione 
+
+### 🔨 Creazione file `.bin`
+
+1. Clonare la repository
+   <!-- valutare se inserire il fork invece del clone -->
+   ```bash
+   git clone https://github.com/<tuo-repo>/qmk_firmware.git cd qmk_firmware
+   ```
+    
+3. Aggiornare i submodules
+
+<!-- finire di aggiornare doc da chatgpt --> 
+
+
+
+
+
+
+
+<!-- FINE NUOVA DOCUMNETAZIONE -->
+---
 
 * Keyboard Maintainer: [nuphy](https://github.com/nuphy-src)
 * Hardware Supported: NuPhy Air75 V2 PCB
@@ -11,6 +56,14 @@
 <!-- aggiunta mia, da revisionare -->
 
 ## Compilare il tuo firmware
+
+### 1. Creare la build del file .bin della tua configurazione
+
+Utilizzando lo strumento QMK SYS
+
+### 2. Flashare la build sulla tastiera
+
+### Parte vecchia
 
 Per creare il file .bin con la tua configurazione deve essere dato il comando `make` dalla root del progetto.
 
