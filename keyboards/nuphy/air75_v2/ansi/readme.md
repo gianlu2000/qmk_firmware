@@ -30,7 +30,7 @@ keyboards/nuphy/air75_v2/ansi/
 
 ### 🔨 Creazione file `.bin`
 
-utilizzando il software QMK SYS:
+utilizzando il software [QMK MSYS](https://msys.qmk.fm/):
 1. Entra nella directory `qmk_firmware` dove è salvato il codice, in questo caso:
    ```
    Documents/GitHub/qmk_firmware
@@ -58,7 +58,7 @@ Enter the bootloader in one way:
 
 * **Bootmagic reset**: Hold down the key at (0,0) in the matrix (usually the top left key or Escape) and plug in the keyboard
 
-Dopo aver collegato la tastiera in modalità bootload, con il software QMK toolbox:
+Dopo aver collegato la tastiera in modalità bootload, con il software [QMK toolbox](https://qmk.fm/toolbox):
 
 1. Apri il file `.bin` buildato con la procedura sopra dalla cartella `qmk_firmware`
 2. Eseguire il flash del firmware sulla tastiera
