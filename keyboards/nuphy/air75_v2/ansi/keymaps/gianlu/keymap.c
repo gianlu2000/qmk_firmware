@@ -49,15 +49,21 @@ enum gianlu_keycodes {
 	MA_OCOF,
 	MA_OCOS,
 	MA_OBCH,
-	MA_OBCS,
+	MA_OBCS,    //
 
     // Macro Ticket
-    MA_TRES,
-    MA_TREP,
-    MA_TNOT,
-    MA_TNOR,
-    MA_TNRR,
-    MA_TFGC,
+    MA_TRES,    // "Restartato"
+    MA_TREP,    // "Restartato come da prosa"
+    MA_TNOT,    // "Notificato"
+    MA_TNOR,    // "Notificato al reperibile"
+    MA_TNRR,    // "Notificato al reperibile e restartato su sua richiesta"
+    MA_TFGC,    // "Fase da completare già in complete, fase completata"
+
+    // Macro Ritardi
+    MA_RPIE,    // "Pred in exec"
+    MA_RECV,    // "Prec <CTRL + V> in exec" --- TEST ---
+    MA_RNOT,    // " - NOTIFICATO"
+    MA_RNTK,    // ", notificato" - testo per ticket --- TEST ---
 };
 
 // Process custom keycodes
@@ -99,7 +105,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     }
     switch (keycode) {
 
-		// Macro Outlook
+		// Macro Outlook - MA_O = "Outlook"
         case MA_OBNG:
             if (record->event.pressed) {
                 start_macro("Buongiorno,\n", g_led_config.matrix_co[record->event.key.row][record->event.key.col]);
@@ -154,7 +160,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             }
             break;
 
-        // Macro Ticket
+        // Macro Ticket - MA_T = "Ticket"
         case MA_TRES:
             if (record->event.pressed) {
                 start_macro("Restartato", g_led_config.matrix_co[record->event.key.row][record->event.key.col]);
@@ -188,6 +194,31 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case MA_TFGC:
             if (record->event.pressed) {
                 start_macro("Fase da completare già in complete, fase completata", g_led_config.matrix_co[record->event.key.row][record->event.key.col]);
+            }
+            break;
+
+        // Macro Ritardi - MA_R = "Ritardi"
+        case MA_RPIE:
+            if (record->event.pressed) {
+                start_macro("Pred in exec", g_led_config.matrix_co[record->event.key.row][record->event.key.col]);
+            }
+            break;
+
+        case MA_RECV:
+            if (record->event.pressed) {
+                start_macro("Prec <CTRL + V> in exec", g_led_config.matrix_co[record->event.key.row][record->event.key.col]);
+            }
+            break;
+
+        case MA_RNOT:
+            if (record->event.pressed) {
+                start_macro(" - NOTIFICATO", g_led_config.matrix_co[record->event.key.row][record->event.key.col]);
+            }
+            break;
+    
+        case MA_RNTK:
+            if (record->event.pressed) {
+                start_macro(", notificato", g_led_config.matrix_co[record->event.key.row][record->event.key.col]);
             }
             break;
 
@@ -418,7 +449,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 	_______,				_______,   	_______,   	_______,  	_______,   	_______,   	_______,   	_______,   	SIDE_SPD,	SIDE_SPI,	_______,				_______,	SIDE_VAI,	_______,
 	_______,	_______,	_______,										_______, 							_______,	MO(4),   	_______,				SIDE_MOD,	SIDE_VAD,   SIDE_HUI),
 
-// layer 5 - Outlook
+// layer 5 - Outlook - Fn + O
 [5] = LAYOUT_ansi_84(
 	_______, 	_______,  	_______,  	_______, 	_______,  	_______,  	_______,  	_______,  	_______,  	_______, 	_______, 	_______, 	_______, 	_______,	_______,	_______,
 	_______, 	MA_OBNG,   	MA_OCDC,   	MA_OJAB,  	MA_OCOF,   	MA_OBCH,   	_______,   	_______,   	_______,   	_______,  	_______,   	_______,	_______, 				_______,	_______,
@@ -427,14 +458,23 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 	_______,				_______,   	_______,   	_______,  	_______,   	_______,   	_______,   	_______,   	_______,	_______,	_______,				_______,	_______,	_______,
 	_______,	_______,	_______,										_______, 							_______,	MO(5),   	_______,				_______,	_______,   _______),
 
-// layer 6 - Ticket
+// layer 6 - Ticket - Fn + P
 [6] = LAYOUT_ansi_84(
 	_______, 	_______,  	_______,  	_______, 	_______,  	_______,  	_______,  	_______,  	_______,  	_______, 	_______, 	_______, 	_______, 	_______,	_______,	_______,
 	_______, 	MA_TRES,   	MA_TNOT,   	MA_TNRR,  	_______,   	_______,   	_______,   	_______,   	_______,   	_______,  	_______,   	_______,	_______, 				_______,	_______,
 	_______, 	MA_TREP,   	MA_TNOR,   	_______,  	_______,   	_______,   	_______,   	_______,   	_______,   	_______,  	_______,   	_______,	_______, 				_______,	_______,
 	_______,	_______,   	_______,   	_______,  	_______,   	MA_TFGC,   	_______,   	_______,   	_______,   	_______,  	_______,	_______, 	 						_______,	_______,
 	_______,				_______,   	_______,   	_______,  	_______,   	_______,   	_______,   	_______,   	_______,	_______,	_______,				_______,	_______,	_______,
-	_______,	_______,	_______,										_______, 							_______,	MO(6),   	_______,				_______,	_______,   _______)
+	_______,	_______,	_______,										_______, 							_______,	MO(6),   	_______,				_______,	_______,   _______),
+
+// layer 7 - Ritardi - Fn + L
+[7] = LAYOUT_ansi_84(
+	_______, 	_______,  	_______,  	_______, 	_______,  	_______,  	_______,  	_______,  	_______,  	_______, 	_______, 	_______, 	_______, 	_______,	_______,	_______,
+	_______, 	_______,   	_______,   	_______,  	_______,   	_______,   	_______,   	_______,   	_______,   	_______,  	_______,   	_______,	_______, 				_______,	_______,
+	_______, 	_______,   	_______,   	_______,  	_______,   	_______,   	_______,   	_______,   	_______,   	_______,  	_______,   	_______,	_______, 				_______,	_______,
+	_______,	_______,   	_______,   	_______,  	_______,   	_______,   	_______,   	_______,   	_______,   	_______,  	_______,	_______, 	 						_______,	_______,
+	_______,				_______,   	_______,   	_______,  	_______,   	_______,   	_______,   	_______,   	_______,	_______,	_______,				_______,	_______,	_______,
+	_______,	_______,	_______,										_______, 							_______,	MO(7),   	_______,				_______,	_______,   _______)
 };
 
 
